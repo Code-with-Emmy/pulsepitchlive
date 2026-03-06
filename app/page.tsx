@@ -26,11 +26,15 @@ import { useSports } from "@/hooks/useSports";
 
 const ADSTERRA_HOST =
   process.env.NEXT_PUBLIC_ADSTERRA_HOST || "www.highperformanceformat.com";
-const ADSTERRA_RIGHT_TOP = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_TOP;
+const ADSTERRA_BANNER_300X250 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_300X250;
+const ADSTERRA_BANNER_728X90 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_728X90;
+const ADSTERRA_BANNER_320X50 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_320X50;
+const ADSTERRA_RIGHT_TOP =
+  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_TOP || ADSTERRA_BANNER_300X250;
 const ADSTERRA_RIGHT_MIDDLE =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_MIDDLE;
+  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_MIDDLE || ADSTERRA_BANNER_300X250;
 const ADSTERRA_RIGHT_BOTTOM =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_BOTTOM;
+  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_BOTTOM || ADSTERRA_BANNER_300X250;
 
 function SearchIcon() {
   return (
@@ -616,7 +620,30 @@ export default function HomePage() {
       </header>
 
       <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
-        <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)_280px]">
+        <section className="mb-2.5 rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] p-2.5">
+          <div className="hidden justify-center md:flex">
+            <AdsterraSlot
+              zoneKey={ADSTERRA_BANNER_728X90}
+              host={ADSTERRA_HOST}
+              width={728}
+              height={90}
+              format="banner"
+              className="overflow-hidden rounded-md"
+            />
+          </div>
+          <div className="flex justify-center md:hidden">
+            <AdsterraSlot
+              zoneKey={ADSTERRA_BANNER_320X50}
+              host={ADSTERRA_HOST}
+              width={320}
+              height={50}
+              format="banner"
+              className="overflow-hidden rounded-md"
+            />
+          </div>
+        </section>
+
+        <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)_336px]">
           <aside className="hidden rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] p-3 md:block">
             <div className="flex items-center justify-between border-b border-[var(--ls-border)] pb-3">
               <p className="text-lg font-semibold text-[var(--ls-text)]">
@@ -1153,8 +1180,9 @@ export default function HomePage() {
                   <AdsterraSlot
                     zoneKey={ADSTERRA_RIGHT_TOP}
                     host={ADSTERRA_HOST}
-                    width={250}
+                    width={300}
                     height={250}
+                    format="banner"
                     className="overflow-hidden rounded-md"
                   />
                 </div>
@@ -1170,8 +1198,9 @@ export default function HomePage() {
                   <AdsterraSlot
                     zoneKey={ADSTERRA_RIGHT_MIDDLE}
                     host={ADSTERRA_HOST}
-                    width={250}
+                    width={300}
                     height={250}
+                    format="banner"
                     className="overflow-hidden rounded-md"
                   />
                 </div>
@@ -1187,8 +1216,9 @@ export default function HomePage() {
                   <AdsterraSlot
                     zoneKey={ADSTERRA_RIGHT_BOTTOM}
                     host={ADSTERRA_HOST}
-                    width={250}
-                    height={300}
+                    width={300}
+                    height={250}
+                    format="banner"
                     className="overflow-hidden rounded-md"
                   />
                 </div>
