@@ -468,7 +468,10 @@ export default function HomePage() {
             </button>
           </nav>
 
-          <div className="relative flex items-center gap-2" data-header-popover="true">
+          <div
+            className="relative flex items-center gap-2"
+            data-header-popover="true"
+          >
             <button
               type="button"
               onClick={() => {
@@ -498,7 +501,7 @@ export default function HomePage() {
 
             {searchOpen && (
               <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
-                <div className="border-b border-[var(--ls-border)] p-3">
+                <div className="border-b border-var(--ls-border) p-3">
                   <input
                     type="text"
                     value={searchQuery}
@@ -540,7 +543,8 @@ export default function HomePage() {
                             {match.homeTeam} vs {match.awayTeam}
                           </span>
                           <span className="block truncate text-xs text-[var(--ls-muted)]">
-                            {match.league ?? "League"} • {formatKickoff(match.startTime)}
+                            {match.league ?? "League"} •{" "}
+                            {formatKickoff(match.startTime)}
                           </span>
                         </span>
                       </span>
@@ -615,7 +619,9 @@ export default function HomePage() {
         <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)_280px]">
           <aside className="hidden rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] p-3 md:block">
             <div className="flex items-center justify-between border-b border-[var(--ls-border)] pb-3">
-              <p className="text-lg font-semibold text-[var(--ls-text)]">Leagues</p>
+              <p className="text-lg font-semibold text-[var(--ls-text)]">
+                Leagues
+              </p>
               <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-semibold text-emerald-300">
                 {totalLiveCount} Live
               </span>
