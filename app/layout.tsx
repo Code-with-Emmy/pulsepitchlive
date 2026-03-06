@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Manrope } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -39,9 +40,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${manrope.variable} ${plexMono.variable} min-h-screen antialiased`}>
+      <body
+        className={`${manrope.variable} ${plexMono.variable} min-h-screen antialiased`}
+      >
         {children}
       </body>
+      <Analytics />
     </html>
   );
 }
