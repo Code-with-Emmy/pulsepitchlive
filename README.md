@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Live Score + Streaming (SportSRC V2)
 
-## Getting Started
+Production-ready Next.js App Router app for multi-sport live scores and stream embeds.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + TypeScript
+- TailwindCSS
+- SWR for client polling
+- Server-side SportSRC V2 proxy via Next Route Handlers
+
+## Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create `.env.local` in project root:
+
+```env
+SPORTSRC_API_KEY=your_api_key_here
+NEXT_PUBLIC_ADSTERRA_HOST=www.highperformanceformat.com
+NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_TOP=your_zone_key_top
+NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_MIDDLE=your_zone_key_middle
+NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_BOTTOM=your_zone_key_bottom
+```
+
+3. Run dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tailwind
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Tailwind is enabled via `@import "tailwindcss"` in [`/Users/aierthinc/Desktop/livefooty/app/globals.css`](/Users/aierthinc/Desktop/livefooty/app/globals.css) and `@tailwindcss/postcss` in `postcss.config.mjs`.
 
-## Learn More
+## API Proxy Routes
 
-To learn more about Next.js, take a look at the following resources:
+- `GET /api/sports` -> SportSRC `?type=sports` (`revalidate: 3600`)
+- `GET /api/matches?sport=&status=&date=` -> SportSRC `?type=matches...` (`revalidate: 15`)
+- `GET /api/match/:id` -> SportSRC `?type=detail&id=...` (`revalidate: 15`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+All upstream requests send:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `X-API-KEY: process.env.SPORTSRC_API_KEY`
 
-## Deploy on Vercel
+API key is never exposed client-side.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Behaviors
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Live refresh every 15 seconds (SWR)
+- Tabs: Live / Upcoming / Finished
+- Date filter
+- Match cards with teams, scores, status, league/time
+- Match detail with stream source selector + iframe player
+- 404 handling with “Match not available (may be finished/removed)”
+- 503 handling with “Data updating, retrying…” and retry behavior
+- Client-only favorites in localStorage with quick filter
+- Responsive mobile-first layout + loading skeletons + empty states
