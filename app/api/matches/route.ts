@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchSportSRC, parseSportSRCError } from "@/lib/sportsrc";
+import { SportSRCError, fetchSportSRC, parseSportSRCError } from "@/lib/sportsrc";
 import { normalizeMatches } from "@/lib/normalize";
 import type { MatchStatus } from "@/lib/types";
 
@@ -41,6 +41,7 @@ export async function GET(request: Request) {
 
   try {
     if (status !== "inprogress") {
+      const cacheWindow = status === "notstarted" ? 60 : 120;
       const data = await fetchSportSRC<unknown>(
         {
           type: "matches",
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
           status,
           date,
         },
-        15,
+        cacheWindow,
       );
 
       return NextResponse.json(data);
@@ -83,7 +84,11 @@ export async function GET(request: Request) {
         if (normalizeMatches(payload).length > 0) {
           return NextResponse.json(payload);
         }
-      } catch {
+      } catch (error) {
+        if (error instanceof SportSRCError && error.status === 429) {
+          throw error;
+        }
+
         // Continue through fallbacks for live feed resilience.
       }
     }
