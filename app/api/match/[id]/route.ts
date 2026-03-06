@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SportSRCError, fetchSportSRC, parseSportSRCError } from "@/lib/sportsrc";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/rate-limit";
 
 type DetailParams =
   | { type: "detail"; id: string }
@@ -72,32 +73,52 @@ async function fetchMatchDetailWithFallback(rawId: string): Promise<unknown> {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
+  const rateLimit = checkRateLimit(request, {
+    route: "api:match-detail",
+    max: 45,
+    windowMs: 60_000,
+  });
+  const respond = (body: unknown, status = 200) =>
+    NextResponse.json(body, {
+      status,
+      headers: rateLimitHeaders(rateLimit),
+    });
+
+  if (!rateLimit.allowed) {
+    return respond(
+      {
+        error: "Too many requests. Please retry shortly.",
+      },
+      429,
+    );
+  }
+
   const { id } = await context.params;
 
   if (!id) {
-    return NextResponse.json(
+    return respond(
       {
         error: "Missing match id",
       },
-      { status: 400 },
+      400,
     );
   }
 
   try {
     const data = await fetchMatchDetailWithFallback(id);
 
-    return NextResponse.json(data);
+    return respond(data);
   } catch (error) {
     const parsed = parseSportSRCError(error);
-    return NextResponse.json(
+    return respond(
       {
         error: friendlyMatchError(parsed.status),
         detail: parsed.detail,
       },
-      { status: parsed.status },
+      parsed.status,
     );
   }
 }

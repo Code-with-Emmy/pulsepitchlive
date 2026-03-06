@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { SportSRCError, fetchSportSRC, parseSportSRCError } from "@/lib/sportsrc";
 import { normalizeMatches } from "@/lib/normalize";
 import type { MatchStatus } from "@/lib/types";
+import { checkRateLimit, rateLimitHeaders } from "@/lib/rate-limit";
 
 const ALLOWED_STATUSES: MatchStatus[] = ["inprogress", "notstarted", "finished"];
 
@@ -16,26 +17,46 @@ function normalizeLiveOnlyPayload(payload: unknown): unknown {
 }
 
 export async function GET(request: Request) {
+  const rateLimit = checkRateLimit(request, {
+    route: "api:matches",
+    max: 60,
+    windowMs: 60_000,
+  });
+  const respond = (body: unknown, status = 200) =>
+    NextResponse.json(body, {
+      status,
+      headers: rateLimitHeaders(rateLimit),
+    });
+
+  if (!rateLimit.allowed) {
+    return respond(
+      {
+        error: "Too many requests. Please retry shortly.",
+      },
+      429,
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const sport = searchParams.get("sport")?.trim();
   const status = searchParams.get("status")?.trim() as MatchStatus | null;
   const date = searchParams.get("date")?.trim();
 
   if (!sport || !status || !date) {
-    return NextResponse.json(
+    return respond(
       {
         error: "Missing required query params: sport, status, date",
       },
-      { status: 400 },
+      400,
     );
   }
 
   if (!ALLOWED_STATUSES.includes(status)) {
-    return NextResponse.json(
+    return respond(
       {
         error: "Invalid status value",
       },
-      { status: 400 },
+      400,
     );
   }
 
@@ -52,7 +73,7 @@ export async function GET(request: Request) {
         cacheWindow,
       );
 
-      return NextResponse.json(data);
+      return respond(data);
     }
 
     const attempts: Array<{
@@ -82,7 +103,7 @@ export async function GET(request: Request) {
         latestPayload = payload;
 
         if (normalizeMatches(payload).length > 0) {
-          return NextResponse.json(payload);
+          return respond(payload);
         }
       } catch (error) {
         if (error instanceof SportSRCError && error.status === 429) {
@@ -93,15 +114,15 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json(latestPayload);
+    return respond(latestPayload);
   } catch (error) {
     const parsed = parseSportSRCError(error);
-    return NextResponse.json(
+    return respond(
       {
         error: parsed.message,
         detail: parsed.detail,
       },
-      { status: parsed.status },
+      parsed.status,
     );
   }
 }
