@@ -446,8 +446,8 @@ export default function HomePage() {
   const matchesSectionLoading = matchesLoading || liveFallbackLoading;
 
   return (
-    <main className="min-h-screen bg-[var(--ls-bg)] text-[var(--ls-text)]">
-      <header className="sticky top-0 z-40 border-b border-[var(--ls-border)] bg-[var(--ls-header)] backdrop-blur">
+    <main className="min-h-screen bg-(--ls-bg) text-(--ls-text)">
+      <header className="sticky top-0 z-40 border-b border-(--ls-border) bg-(--ls-header) backdrop-blur">
         <div className="mx-auto flex h-[74px] w-full max-w-[1500px] items-center justify-between px-3 md:px-6">
           <div className="flex items-center gap-3">
             <img
@@ -483,7 +483,7 @@ export default function HomePage() {
                 setSearchOpen((prev) => !prev);
                 setNotificationsOpen(false);
               }}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--ls-border)] bg-[var(--ls-surface)] text-base text-[var(--ls-muted)] transition hover:border-emerald-400"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--ls-border) bg-(--ls-surface) text-base text-(--ls-muted) transition hover:border-emerald-400"
               aria-label="Search matches"
             >
               <SearchIcon />
@@ -494,7 +494,7 @@ export default function HomePage() {
                 setNotificationsOpen((prev) => !prev);
                 setSearchOpen(false);
               }}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--ls-border)] bg-[var(--ls-surface)] text-base text-[var(--ls-muted)] transition hover:border-emerald-400"
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--ls-border) bg-(--ls-surface) text-base text-(--ls-muted) transition hover:border-emerald-400"
               aria-label="Open notifications"
             >
               <BellIcon />
@@ -505,19 +505,19 @@ export default function HomePage() {
             <ThemeToggle />
 
             {searchOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
+              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
                 <div className="border-b border-var(--ls-border) p-3">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Search team or league..."
-                    className="h-10 w-full rounded-lg border border-[var(--ls-border)] bg-[var(--ls-panel-alt)] px-3 text-sm text-[var(--ls-text)] outline-none ring-emerald-400 transition focus:ring-2"
+                    className="h-10 w-full rounded-lg border border-(--ls-border) bg-(--ls-panel-alt) px-3 text-sm text-(--ls-text) outline-none ring-emerald-400 transition focus:ring-2"
                   />
                 </div>
                 <div className="max-h-[340px] overflow-y-auto p-2">
                   {searchResults.length === 0 && (
-                    <p className="px-2 py-6 text-center text-sm text-[var(--ls-muted)]">
+                    <p className="px-2 py-6 text-center text-sm text-(--ls-muted)">
                       No results found.
                     </p>
                   )}
@@ -526,28 +526,28 @@ export default function HomePage() {
                       key={`search-${match.id}`}
                       href={`/match/${encodeURIComponent(match.id)}`}
                       onClick={() => setSearchOpen(false)}
-                      className="flex items-center justify-between rounded-lg px-2 py-2 text-sm transition hover:bg-[var(--ls-panel-alt)]"
+                      className="flex items-center justify-between rounded-lg px-2 py-2 text-sm transition hover:bg-(--ls-panel-alt)"
                     >
                       <span className="flex min-w-0 items-center gap-2">
                         <span className="flex shrink-0 items-center -space-x-1">
                           <SafeImage
                             src={match.homeBadge}
                             alt=""
-                            className="h-5 w-5 rounded-full border border-[var(--ls-surface)] object-contain bg-[var(--ls-surface)]"
-                            fallbackClassName="inline-block h-5 w-5 rounded-full border border-[var(--ls-surface)] bg-[var(--ls-panel-alt)]"
+                            className="h-5 w-5 rounded-full border border-(--ls-surface) object-contain bg-(--ls-surface)"
+                            fallbackClassName="inline-block h-5 w-5 rounded-full border border-(--ls-surface) bg-(--ls-panel-alt)"
                           />
                           <SafeImage
                             src={match.awayBadge}
                             alt=""
-                            className="h-5 w-5 rounded-full border border-[var(--ls-surface)] object-contain bg-[var(--ls-surface)]"
-                            fallbackClassName="inline-block h-5 w-5 rounded-full border border-[var(--ls-surface)] bg-[var(--ls-panel-alt)]"
+                            className="h-5 w-5 rounded-full border border-(--ls-surface) object-contain bg-(--ls-surface)"
+                            fallbackClassName="inline-block h-5 w-5 rounded-full border border-(--ls-surface) bg-(--ls-panel-alt)"
                           />
                         </span>
                         <span className="min-w-0">
-                          <span className="block truncate font-semibold text-[var(--ls-text)]">
+                          <span className="block truncate font-semibold text-(--ls-text)">
                             {match.homeTeam} vs {match.awayTeam}
                           </span>
-                          <span className="block truncate text-xs text-[var(--ls-muted)]">
+                          <span className="block truncate text-xs text-(--ls-muted)">
                             {match.league ?? "League"} •{" "}
                             {formatKickoff(match.startTime)}
                           </span>
@@ -567,18 +567,18 @@ export default function HomePage() {
             )}
 
             {notificationsOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
-                <div className="flex items-center justify-between border-b border-[var(--ls-border)] px-3 py-2.5">
-                  <p className="text-sm font-semibold text-[var(--ls-text)]">
+              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
+                <div className="flex items-center justify-between border-b border-(--ls-border) px-3 py-2.5">
+                  <p className="text-sm font-semibold text-(--ls-text)">
                     Match Alerts
                   </p>
-                  <span className="mono-label text-xs text-[var(--ls-muted)]">
+                  <span className="mono-label text-xs text-(--ls-muted)">
                     {notifications.length} updates
                   </span>
                 </div>
                 <div className="max-h-[340px] overflow-y-auto p-2">
                   {notifications.length === 0 && (
-                    <p className="px-2 py-6 text-center text-sm text-[var(--ls-muted)]">
+                    <p className="px-2 py-6 text-center text-sm text-(--ls-muted)">
                       No new notifications.
                     </p>
                   )}
@@ -587,27 +587,27 @@ export default function HomePage() {
                       key={notification.id}
                       href={notification.href}
                       onClick={() => setNotificationsOpen(false)}
-                      className="flex items-start gap-2 rounded-lg px-2 py-2 transition hover:bg-[var(--ls-panel-alt)]"
+                      className="flex items-start gap-2 rounded-lg px-2 py-2 transition hover:bg-(--ls-panel-alt)"
                     >
                       <span className="mt-0.5 flex shrink-0 items-center -space-x-1">
                         <SafeImage
                           src={notification.homeBadge}
                           alt=""
-                          className="h-5 w-5 rounded-full border border-[var(--ls-surface)] object-contain bg-[var(--ls-surface)]"
-                          fallbackClassName="inline-block h-5 w-5 rounded-full border border-[var(--ls-surface)] bg-[var(--ls-panel-alt)]"
+                          className="h-5 w-5 rounded-full border border-(--ls-surface) object-contain bg-(--ls-surface)"
+                          fallbackClassName="inline-block h-5 w-5 rounded-full border border-(--ls-surface) bg-(--ls-panel-alt)"
                         />
                         <SafeImage
                           src={notification.awayBadge}
                           alt=""
-                          className="h-5 w-5 rounded-full border border-[var(--ls-surface)] object-contain bg-[var(--ls-surface)]"
-                          fallbackClassName="inline-block h-5 w-5 rounded-full border border-[var(--ls-surface)] bg-[var(--ls-panel-alt)]"
+                          className="h-5 w-5 rounded-full border border-(--ls-surface) object-contain bg-(--ls-surface)"
+                          fallbackClassName="inline-block h-5 w-5 rounded-full border border-(--ls-surface) bg-(--ls-panel-alt)"
                         />
                       </span>
                       <span className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[var(--ls-text)]">
+                        <p className="truncate text-sm font-semibold text-(--ls-text)">
                           {notification.title}
                         </p>
-                        <p className="truncate text-xs text-[var(--ls-muted)]">
+                        <p className="truncate text-xs text-(--ls-muted)">
                           {notification.detail}
                         </p>
                       </span>
@@ -621,7 +621,7 @@ export default function HomePage() {
       </header>
 
       <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
-        <section className="mb-2.5 rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] p-2.5">
+        <section className="mb-2.5 rounded-xl border border-(--ls-border) bg-(--ls-surface) p-2.5">
           <div className="hidden justify-center md:flex">
             <AdsterraSlot
               zoneKey={ADSTERRA_BANNER_728X90}
@@ -645,11 +645,9 @@ export default function HomePage() {
         </section>
 
         <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)_336px]">
-          <aside className="hidden rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] p-3 md:block">
-            <div className="flex items-center justify-between border-b border-[var(--ls-border)] pb-3">
-              <p className="text-lg font-semibold text-[var(--ls-text)]">
-                Leagues
-              </p>
+          <aside className="hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) p-3 md:block">
+            <div className="flex items-center justify-between border-b border-(--ls-border) pb-3">
+              <p className="text-lg font-semibold text-(--ls-text)">Leagues</p>
               <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-semibold text-emerald-300">
                 {totalLiveCount} Live
               </span>
@@ -666,7 +664,7 @@ export default function HomePage() {
                     className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition ${
                       pinned
                         ? "bg-emerald-500/15 text-emerald-300"
-                        : "text-[var(--ls-muted)] hover:bg-[var(--ls-panel-alt)]"
+                        : "text-(--ls-muted) hover:bg-(--ls-panel-alt)"
                     }`}
                   >
                     {league.logo ? (
@@ -681,7 +679,7 @@ export default function HomePage() {
                           <SafeImage
                             src={league.flag}
                             alt=""
-                            className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border border-[var(--ls-surface)] object-cover"
+                            className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border border-(--ls-surface) object-cover"
                             hideOnError
                           />
                         )}
@@ -694,7 +692,7 @@ export default function HomePage() {
                         hideOnError
                       />
                     ) : (
-                      <span className="inline-block h-5 w-5 rounded-full bg-[var(--ls-panel-alt)]" />
+                      <span className="inline-block h-5 w-5 rounded-full bg-(--ls-panel-alt)" />
                     )}
                     <span className="min-w-0 flex-1 truncate">
                       {league.name}
@@ -708,8 +706,8 @@ export default function HomePage() {
             </div>
 
             {cupGroup.length > 0 && (
-              <div className="mt-4 border-t border-[var(--ls-border)] pt-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ls-muted)]">
+              <div className="mt-4 border-t border-(--ls-border) pt-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--ls-muted)">
                   Cup
                 </p>
                 <div className="mt-2 space-y-1">
@@ -718,7 +716,7 @@ export default function HomePage() {
                       key={`cup-nav-${league.name}`}
                       type="button"
                       onClick={() => toggleLeaguePin(league.name)}
-                      className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-[var(--ls-muted)] transition hover:bg-[var(--ls-panel-alt)]"
+                      className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-(--ls-muted) transition hover:bg-(--ls-panel-alt)"
                     >
                       {league.logo ? (
                         <SafeImage
@@ -735,7 +733,7 @@ export default function HomePage() {
                           hideOnError
                         />
                       ) : (
-                        <span className="inline-block h-5 w-5 rounded-full bg-[var(--ls-panel-alt)]" />
+                        <span className="inline-block h-5 w-5 rounded-full bg-(--ls-panel-alt)" />
                       )}
                       <span className="min-w-0 flex-1 truncate">
                         {league.name}
@@ -747,8 +745,8 @@ export default function HomePage() {
             )}
 
             {pinnedLeagues.length > 0 && (
-              <div className="mt-4 border-t border-[var(--ls-border)] pt-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--ls-muted)]">
+              <div className="mt-4 border-t border-(--ls-border) pt-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--ls-muted)">
                   Pinned
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -769,7 +767,7 @@ export default function HomePage() {
           </aside>
 
           <section className="space-y-2.5">
-            <section className="rounded-xl border border-[var(--ls-border)] bg-[var(--ls-surface)] p-3">
+            <section className="rounded-xl border border-(--ls-border) bg-(--ls-surface) p-3">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                 <div className="flex flex-wrap items-end gap-2.5">
                   <SportSelector
@@ -780,14 +778,14 @@ export default function HomePage() {
                   />
 
                   <label className="flex min-w-[170px] flex-col gap-1.5">
-                    <span className="mono-label text-xs uppercase tracking-[0.14em] text-[var(--ls-muted)]">
+                    <span className="mono-label text-xs uppercase tracking-[0.14em] text-(--ls-muted)">
                       Date
                     </span>
                     <input
                       type="date"
                       value={date}
                       onChange={(event) => setDate(event.target.value)}
-                      className="h-11 rounded-lg border border-[var(--ls-border)] bg-[var(--ls-panel-alt)] px-3 text-base text-[var(--ls-text)] outline-none ring-emerald-400 transition focus:ring-2"
+                      className="h-11 rounded-lg border border-(--ls-border) bg-(--ls-panel-alt) px-3 text-base text-(--ls-text) outline-none ring-emerald-400 transition focus:ring-2"
                     />
                   </label>
                 </div>
@@ -799,7 +797,7 @@ export default function HomePage() {
                     className={`h-10 rounded-full border px-4 text-sm font-semibold transition ${
                       favoritesOnly
                         ? "border-emerald-500 bg-emerald-500 text-black"
-                        : "border-[var(--ls-border)] bg-[var(--ls-panel-alt)] text-[var(--ls-text)] hover:border-emerald-400"
+                        : "border-(--ls-border) bg-(--ls-panel-alt) text-(--ls-text) hover:border-emerald-400"
                     }`}
                   >
                     {favoritesOnly ? "Favorites On" : "Favorites"}
@@ -810,7 +808,7 @@ export default function HomePage() {
                     className={`h-10 rounded-full border px-4 text-sm font-semibold transition ${
                       pinnedOnly
                         ? "border-emerald-500 bg-emerald-500 text-black"
-                        : "border-[var(--ls-border)] bg-[var(--ls-panel-alt)] text-[var(--ls-text)] hover:border-emerald-400"
+                        : "border-(--ls-border) bg-(--ls-panel-alt) text-(--ls-text) hover:border-emerald-400"
                     }`}
                   >
                     {pinnedOnly ? "Pinned On" : "Pinned"}
@@ -820,14 +818,14 @@ export default function HomePage() {
                     onClick={() => {
                       void mutate();
                     }}
-                    className="h-10 rounded-full border border-[var(--ls-border)] bg-[var(--ls-panel-alt)] px-4 text-sm font-semibold text-[var(--ls-text)] transition hover:border-emerald-400"
+                    className="h-10 rounded-full border border-(--ls-border) bg-(--ls-panel-alt) px-4 text-sm font-semibold text-(--ls-text) transition hover:border-emerald-400"
                   >
                     Refresh
                   </button>
                 </div>
               </div>
 
-              <div className="mt-3 border-t border-[var(--ls-border)] pt-3">
+              <div className="mt-3 border-t border-(--ls-border) pt-3">
                 <Tabs value={status} onChange={setStatus} />
               </div>
             </section>
