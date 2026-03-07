@@ -453,21 +453,22 @@ export default function HomePage() {
             <img
               src="/logo.png"
               alt="PulsePitch Live"
-              className="h-12 w-auto object-contain md:h-14"
+              className="h-20 w-auto object-contain md:h-14"
             />
           </div>
 
           <nav className="hidden items-center gap-9 md:flex">
-            <button className="border-b-2 border-emerald-500 pb-1 text-base font-semibold text-emerald-500">
+            <button className="border-t-2 animate-pulse  rounded-2xl p-1 bg-gray border-emerald-500 pb-1 text-base font-semibold text-emerald-500 flex items-center gap-2">
+              <img src="icon.png" alt="" className="h-5 w-5 " />
               Live Streaming
             </button>
-            <button className="text-base font-medium text-[var(--ls-muted)]">
+            <button className="text-base font-medium text-var(--ls-muted)">
               News
             </button>
-            <button className="text-base font-medium text-[var(--ls-muted)]">
+            <button className="text-base font-medium text-var(--ls-muted)">
               Live score
             </button>
-            <button className="text-base font-medium text-[var(--ls-muted)]">
+            <button className="text-base font-medium text-var(--ls-muted)">
               Highlight
             </button>
           </nav>

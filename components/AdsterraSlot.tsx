@@ -11,6 +11,8 @@ interface AdsterraSlotProps {
   format?: "iframe" | "banner";
 }
 
+let adsterraLoadQueue = Promise.resolve();
+
 export default function AdsterraSlot({
   zoneKey,
   width,
@@ -32,27 +34,48 @@ export default function AdsterraSlot({
       return;
     }
 
-    const optionsScript = document.createElement("script");
-    optionsScript.type = "text/javascript";
-    optionsScript.text = `
-      window.atOptions = {
-        key: '${zoneKey}',
-        format: '${format}',
-        height: ${height},
-        width: ${width},
-        params: {}
-      };
-    `;
+    let disposed = false;
+    const normalizedFormat = format === "banner" ? "iframe" : format;
 
-    const invokeScript = document.createElement("script");
-    invokeScript.type = "text/javascript";
-    invokeScript.async = false;
-    invokeScript.src = `https://${host}/${zoneKey}/invoke.js`;
+    adsterraLoadQueue = adsterraLoadQueue
+      .catch(() => undefined)
+      .then(
+        () =>
+          new Promise<void>((resolve) => {
+            if (disposed || !mountRef.current) {
+              resolve();
+              return;
+            }
 
-    mountNode.appendChild(optionsScript);
-    mountNode.appendChild(invokeScript);
+            const nextMountNode = mountRef.current;
+            nextMountNode.innerHTML = "";
+
+            const optionsScript = document.createElement("script");
+            optionsScript.type = "text/javascript";
+            optionsScript.text = `
+              window.atOptions = {
+                key: '${zoneKey}',
+                format: '${normalizedFormat}',
+                height: ${height},
+                width: ${width},
+                params: {}
+              };
+            `;
+
+            const invokeScript = document.createElement("script");
+            invokeScript.type = "text/javascript";
+            invokeScript.async = false;
+            invokeScript.src = `https://${host}/${zoneKey}/invoke.js`;
+            invokeScript.onload = () => resolve();
+            invokeScript.onerror = () => resolve();
+
+            nextMountNode.appendChild(optionsScript);
+            nextMountNode.appendChild(invokeScript);
+          }),
+      );
 
     return () => {
+      disposed = true;
       mountNode.innerHTML = "";
     };
   }, [zoneKey, width, height, format, host]);

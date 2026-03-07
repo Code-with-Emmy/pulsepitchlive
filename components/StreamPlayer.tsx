@@ -53,7 +53,7 @@ export default function StreamPlayer({ src, onLoad, onError }: StreamPlayerProps
         key={autoplaySrc}
         src={autoplaySrc}
         title="Live stream player"
-        className="aspect-video w-full"
+        className="h-[58svh] min-h-[340px] w-full sm:aspect-video sm:h-auto sm:min-h-0"
         allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
         allowFullScreen
         onLoad={onLoad}
