@@ -5,13 +5,16 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
+import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 import SafeImage from "@/components/SafeImage";
 import StreamPlayer from "@/components/StreamPlayer";
 import StreamSourceSelect from "@/components/StreamSourceSelect";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ApiClientError } from "@/lib/api-client";
 import { formatKickoff, toDateInputValue, todayInputDate } from "@/lib/date";
+import { useBrowserAlerts } from "@/hooks/useBrowserAlerts";
 import { useMatches } from "@/hooks/useMatches";
+import { useMatchNotifications } from "@/hooks/useMatchNotifications";
 import { useMatchDetail } from "@/hooks/useMatchDetail";
 import type { StreamSource } from "@/lib/types";
 
@@ -91,6 +94,7 @@ export default function MatchDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id ?? null;
   const { detail, isLoading, error, mutate } = useMatchDetail(id);
+  const { permission: alertsPermission, requestPermission } = useBrowserAlerts();
   const [selectedStreamUrl, setSelectedStreamUrl] = useState("");
   const [lastLoadedUrl, setLastLoadedUrl] = useState("");
   const [failedStreamUrls, setFailedStreamUrls] = useState<string[]>([]);
@@ -223,6 +227,29 @@ export default function MatchDetailPage() {
       upcomingMatches.filter((match) => match.id !== detail?.id).slice(0, 6),
     [upcomingMatches, detail?.id],
   );
+  const currentMatchAlert = useMemo(() => {
+    if (!detail) {
+      return [];
+    }
+
+    return [
+      {
+        id: detail.id,
+        awayScore: detail.awayScore,
+        awayTeam: detail.awayTeam,
+        homeScore: detail.homeScore,
+        homeTeam: detail.homeTeam,
+        href: `/match/${encodeURIComponent(detail.id)}`,
+        league: detail.league,
+        status: detail.status,
+      },
+    ];
+  }, [detail]);
+
+  useMatchNotifications({
+    permission: alertsPermission,
+    matches: currentMatchAlert,
+  });
   const searchPool = useMemo(() => {
     const byId = new Map<string, (typeof liveMatches)[number]>();
     if (detail) {
@@ -335,6 +362,12 @@ export default function MatchDetailPage() {
                 {notifications.length > 9 ? "9+" : notifications.length}
               </span>
             </button>
+            <BrowserAlertsButton
+              permission={alertsPermission}
+              onRequest={() => {
+                void requestPermission();
+              }}
+            />
             <ThemeToggle />
             <button
               type="button"
@@ -418,6 +451,11 @@ export default function MatchDetailPage() {
                     {notifications.length} updates
                   </span>
                 </div>
+                {alertsPermission !== "granted" && (
+                  <div className="border-b border-(--ls-border) px-3 py-2 text-xs text-(--ls-muted)">
+                    Enable browser alerts to get live updates for this match while this page is open.
+                  </div>
+                )}
                 <div className="max-h-[340px] overflow-y-auto p-2">
                   {notifications.length === 0 && (
                     <p className="px-2 py-6 text-center text-sm text-(--ls-muted)">

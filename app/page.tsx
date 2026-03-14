@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
+import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 import MatchCard from "@/components/MatchCard";
 import SafeImage from "@/components/SafeImage";
 import SportSelector from "@/components/SportSelector";
 import Tabs from "@/components/Tabs";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useBrowserAlerts } from "@/hooks/useBrowserAlerts";
+import { useMatchNotifications } from "@/hooks/useMatchNotifications";
 import { formatKickoff, todayInputDate } from "@/lib/date";
 import { ApiClientError } from "@/lib/api-client";
 import {
@@ -123,6 +126,7 @@ export default function HomePage() {
   }, []);
 
   const { sports, error: sportsError, isLoading: sportsLoading } = useSports();
+  const { permission: alertsPermission, requestPermission } = useBrowserAlerts();
   const activeSport = sport || sports[0]?.id || "";
 
   const {
@@ -362,6 +366,38 @@ export default function HomePage() {
 
     return cards.slice(0, 9);
   }, [liveFeed, upcomingMatchesSource, matches]);
+  const trackedAlertMatches = useMemo(() => {
+    if (favoriteIds.length === 0 && pinnedLeagues.length === 0) {
+      return [];
+    }
+
+    const byId = new Map<string, (typeof matches)[number]>();
+    [...liveFeed, ...upcomingMatchesSource, ...matches].forEach((match) => {
+      const league = match.league ?? "Unknown League";
+      if (
+        favoriteIds.includes(match.id) ||
+        pinnedLeagues.includes(league)
+      ) {
+        byId.set(match.id, match);
+      }
+    });
+
+    return Array.from(byId.values()).map((match) => ({
+      id: match.id,
+      awayScore: match.awayScore,
+      awayTeam: match.awayTeam,
+      homeScore: match.homeScore,
+      homeTeam: match.homeTeam,
+      href: `/match/${encodeURIComponent(match.id)}`,
+      league: match.league,
+      status: match.status,
+    }));
+  }, [favoriteIds, liveFeed, matches, pinnedLeagues, upcomingMatchesSource]);
+
+  useMatchNotifications({
+    permission: alertsPermission,
+    matches: trackedAlertMatches,
+  });
 
   function toggleFavorite(matchId: string) {
     setFavoriteIds((prev) => {
@@ -427,6 +463,12 @@ export default function HomePage() {
             className="relative flex items-center gap-2"
             data-header-popover="true"
           >
+            <BrowserAlertsButton
+              permission={alertsPermission}
+              onRequest={() => {
+                void requestPermission();
+              }}
+            />
             <button
               type="button"
               onClick={() => {
@@ -526,6 +568,11 @@ export default function HomePage() {
                     {notifications.length} updates
                   </span>
                 </div>
+                {alertsPermission !== "granted" && (
+                  <div className="border-b border-(--ls-border) px-3 py-2 text-xs text-(--ls-muted)">
+                    Enable browser alerts to get live updates for favorite or pinned matches while this page is open.
+                  </div>
+                )}
                 <div className="max-h-[340px] overflow-y-auto p-2">
                   {notifications.length === 0 && (
                     <p className="px-2 py-6 text-center text-sm text-(--ls-muted)">
