@@ -1,8 +1,21 @@
 import "server-only";
+import { mockFetchSportSRC } from "./mock-data";
 
 const SPORTSRC_BASE_URL = "https://api.sportsrc.org/v2/";
 
 type Primitive = string | number | boolean;
+
+interface CachedEntry {
+  expiresAt: number;
+  payload: unknown;
+}
+
+declare global {
+  var __liveFootySportSRCCache: Map<string, CachedEntry> | undefined;
+  var __liveFootySportSRCInflight:
+    | Map<string, Promise<unknown>>
+    | undefined;
+}
 
 export class SportSRCError extends Error {
   readonly status: number;
@@ -35,6 +48,49 @@ function buildEndpoint(params: Record<string, Primitive | undefined>): string {
   });
 
   return url.toString();
+}
+
+function getSportSRCCache(): Map<string, CachedEntry> {
+  if (!globalThis.__liveFootySportSRCCache) {
+    globalThis.__liveFootySportSRCCache = new Map<string, CachedEntry>();
+  }
+
+  return globalThis.__liveFootySportSRCCache;
+}
+
+function getSportSRCInflight(): Map<string, Promise<unknown>> {
+  if (!globalThis.__liveFootySportSRCInflight) {
+    globalThis.__liveFootySportSRCInflight = new Map<string, Promise<unknown>>();
+  }
+
+  return globalThis.__liveFootySportSRCInflight;
+}
+
+function readCachedPayload(endpoint: string): unknown | null {
+  const cache = getSportSRCCache();
+  const cached = cache.get(endpoint);
+
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    cache.delete(endpoint);
+    return null;
+  }
+
+  return cached.payload;
+}
+
+function writeCachedPayload(
+  endpoint: string,
+  payload: unknown,
+  revalidateSeconds: number,
+): void {
+  getSportSRCCache().set(endpoint, {
+    payload,
+    expiresAt: Date.now() + revalidateSeconds * 1000,
+  });
 }
 
 export function parseSportSRCError(error: unknown): {
@@ -74,6 +130,18 @@ export async function fetchSportSRC<T>(
   }
 
   const endpoint = buildEndpoint(params);
+  const cachedPayload = readCachedPayload(endpoint);
+  if (cachedPayload !== null) {
+    return cachedPayload as T;
+  }
+
+  const inflight = getSportSRCInflight();
+  const activeRequest = inflight.get(endpoint);
+  if (activeRequest) {
+    return (await activeRequest) as T;
+  }
+
+  const requestPromise = (async () => {
   const response = await fetch(endpoint, {
     headers: {
       "X-API-KEY": apiKey,
@@ -98,6 +166,13 @@ export async function fetchSportSRC<T>(
         ? payload.message
         : `SportSRC upstream error (${response.status})`;
 
+    if (response.status === 429 && process.env.NODE_ENV === "development") {
+      console.warn(`SportSRC Rate limit (429) hit for ${endpoint}. Using mock data.`);
+      const mockPayload = mockFetchSportSRC(params);
+      writeCachedPayload(endpoint, mockPayload, 60);
+      return mockPayload as T;
+    }
+
     throw new SportSRCError({
       status: response.status,
       statusText: response.statusText,
@@ -107,5 +182,16 @@ export async function fetchSportSRC<T>(
     });
   }
 
-  return payload as T;
+    writeCachedPayload(endpoint, payload, revalidate);
+
+    return payload as T;
+  })();
+
+  inflight.set(endpoint, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    inflight.delete(endpoint);
+  }
 }
