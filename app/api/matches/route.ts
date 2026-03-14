@@ -17,30 +17,23 @@ function normalizeLiveOnlyPayload(payload: unknown): unknown {
 }
 
 export async function GET(request: Request) {
-  const rateLimit = checkRateLimit(request, {
-    route: "api:matches",
-    max: 60,
-    windowMs: 60_000,
-  });
-  const respond = (body: unknown, status = 200) =>
-    NextResponse.json(body, {
-      status,
-      headers: rateLimitHeaders(rateLimit),
-    });
-
-  if (!rateLimit.allowed) {
-    return respond(
-      {
-        error: "Too many requests. Please retry shortly.",
-      },
-      429,
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const sport = searchParams.get("sport")?.trim();
   const status = searchParams.get("status")?.trim() as MatchStatus | null;
   const date = searchParams.get("date")?.trim();
+
+  const bucketId = [sport ?? "", status ?? "", date ?? ""].join(":");
+  const rateLimit = checkRateLimit(request, {
+    route: "api:matches",
+    bucketId,
+    max: 60,
+    windowMs: 60_000,
+  });
+  const respond = (body: unknown, statusCode = 200) =>
+    NextResponse.json(body, {
+      status: statusCode,
+      headers: rateLimitHeaders(rateLimit),
+    });
 
   if (!sport || !status || !date) {
     return respond(
@@ -48,6 +41,15 @@ export async function GET(request: Request) {
         error: "Missing required query params: sport, status, date",
       },
       400,
+    );
+  }
+
+  if (!rateLimit.allowed) {
+    return respond(
+      {
+        error: "Too many requests. Please retry shortly.",
+      },
+      429,
     );
   }
 

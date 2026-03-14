@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import MatchCard from "@/components/MatchCard";
 import SafeImage from "@/components/SafeImage";
@@ -26,15 +27,12 @@ import { useSports } from "@/hooks/useSports";
 
 const ADSTERRA_HOST =
   process.env.NEXT_PUBLIC_ADSTERRA_HOST || "www.highperformanceformat.com";
-const ADSTERRA_BANNER_300X250 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_300X250;
-const ADSTERRA_BANNER_728X90 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_728X90;
-const ADSTERRA_BANNER_320X50 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_320X50;
-const ADSTERRA_RIGHT_TOP =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_TOP || ADSTERRA_BANNER_300X250;
-const ADSTERRA_RIGHT_MIDDLE =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_MIDDLE || ADSTERRA_BANNER_300X250;
-const ADSTERRA_RIGHT_BOTTOM =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_BOTTOM || ADSTERRA_BANNER_300X250;
+const ADSTERRA_DEFAULT_NATIVE_SLOT =
+  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_300X250;
+const ADSTERRA_NOTIFICATION_SLOT =
+  process.env.NEXT_PUBLIC_ADSTERRA_NOTIFICATION_SLOT ||
+  ADSTERRA_DEFAULT_NATIVE_SLOT;
+const ADSTERRA_NATIVE_CODE = process.env.NEXT_PUBLIC_ADSTERRA_NATIVE_CODE;
 
 function SearchIcon() {
   return (
@@ -79,22 +77,8 @@ function PlayIcon() {
   );
 }
 
-function offsetInputDate(dateInput: string, days: number): string {
-  const base = new Date(`${dateInput}T00:00:00`);
-  if (Number.isNaN(base.getTime())) {
-    return dateInput;
-  }
-  base.setDate(base.getDate() + days);
-  const year = base.getFullYear();
-  const month = `${base.getMonth() + 1}`.padStart(2, "0");
-  const day = `${base.getDate()}`.padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 export default function HomePage() {
   const [todayDate, setTodayDate] = useState("");
-  const yesterdayDate = offsetInputDate(todayDate, -1);
-  const tomorrowDate = offsetInputDate(todayDate, 1);
   const [sport, setSport] = useState("");
   const [status, setStatus] = useState<MatchStatus>("inprogress");
   const [date, setDate] = useState<string>("");
@@ -151,33 +135,24 @@ export default function HomePage() {
   );
   const { matches: upcomingMatchesRaw, isLoading: upcomingLoading } =
     useMatches(
-      activeSport && date
+      status !== "notstarted" && activeSport && date
         ? { sport: activeSport, status: "notstarted", date }
         : null,
     );
   const { matches: liveMatchesRaw, isLoading: liveMatchesLoading } = useMatches(
-    activeSport && date
+    status !== "inprogress" && activeSport && date
       ? { sport: activeSport, status: "inprogress", date }
       : null,
   );
-  const { matches: todayLiveMatchesRaw, isLoading: todayLiveLoading } =
-    useMatches(
-      activeSport && todayDate
-        ? { sport: activeSport, status: "inprogress", date: todayDate }
-        : null,
-    );
-  const { matches: yesterdayLiveMatchesRaw, isLoading: yesterdayLiveLoading } =
-    useMatches(
-      activeSport && yesterdayDate
-        ? { sport: activeSport, status: "inprogress", date: yesterdayDate }
-        : null,
-    );
-  const { matches: tomorrowLiveMatchesRaw, isLoading: tomorrowLiveLoading } =
-    useMatches(
-      activeSport && tomorrowDate
-        ? { sport: activeSport, status: "inprogress", date: tomorrowDate }
-        : null,
-    );
+  const fallbackLiveDate = todayDate && todayDate !== date ? todayDate : "";
+  const {
+    matches: fallbackLiveMatchesRaw,
+    isLoading: fallbackLiveLoading,
+  } = useMatches(
+    activeSport && fallbackLiveDate
+      ? { sport: activeSport, status: "inprogress", date: fallbackLiveDate }
+      : null,
+  );
 
   const filteredMatches = useMemo(() => {
     let next = matches;
@@ -195,19 +170,26 @@ export default function HomePage() {
     return next;
   }, [favoriteIds, favoritesOnly, pinnedLeagues, pinnedOnly, matches]);
 
+  const upcomingMatchesSource =
+    status === "notstarted" ? matches : upcomingMatchesRaw;
+  const liveMatchesSource =
+    status === "inprogress" ? matches : liveMatchesRaw;
+
   const upcomingMatches = useMemo(
-    () => upcomingMatchesRaw.slice(0, 8),
-    [upcomingMatchesRaw],
+    () => upcomingMatchesSource.slice(0, 8),
+    [upcomingMatchesSource],
   );
 
   const apiLeagues = useMemo(() => {
     const allById = new Map<string, (typeof matches)[number]>();
     const liveById = new Map<string, (typeof matches)[number]>();
 
-    [...matches, ...upcomingMatchesRaw, ...liveMatchesRaw].forEach((match) => {
-      allById.set(match.id, match);
-    });
-    liveMatchesRaw.forEach((match) => {
+    [...matches, ...upcomingMatchesSource, ...liveMatchesSource].forEach(
+      (match) => {
+        allById.set(match.id, match);
+      },
+    );
+    liveMatchesSource.forEach((match) => {
       liveById.set(match.id, match);
     });
 
@@ -251,7 +233,7 @@ export default function HomePage() {
     return Array.from(map.values()).sort((a, b) =>
       a.name.localeCompare(b.name),
     );
-  }, [matches, upcomingMatchesRaw, liveMatchesRaw]);
+  }, [matches, upcomingMatchesSource, liveMatchesSource]);
 
   const totalLiveCount = useMemo(
     () => apiLeagues.reduce((sum, league) => sum + league.liveCount, 0),
@@ -260,21 +242,11 @@ export default function HomePage() {
 
   const liveFeed = useMemo(
     () =>
-      [
-        ...liveMatchesRaw,
-        ...todayLiveMatchesRaw,
-        ...yesterdayLiveMatchesRaw,
-        ...tomorrowLiveMatchesRaw,
-      ].filter(
+      [...liveMatchesSource, ...fallbackLiveMatchesRaw].filter(
         (match, index, list) =>
           list.findIndex((candidate) => candidate.id === match.id) === index,
       ),
-    [
-      liveMatchesRaw,
-      todayLiveMatchesRaw,
-      yesterdayLiveMatchesRaw,
-      tomorrowLiveMatchesRaw,
-    ],
+    [liveMatchesSource, fallbackLiveMatchesRaw],
   );
   const filteredLiveFeed = useMemo(() => {
     let next = liveFeed;
@@ -320,11 +292,11 @@ export default function HomePage() {
   );
   const searchPool = useMemo(() => {
     const byId = new Map<string, (typeof matches)[number]>();
-    [...liveFeed, ...upcomingMatchesRaw, ...matches].forEach((match) => {
+    [...liveFeed, ...upcomingMatchesSource, ...matches].forEach((match) => {
       byId.set(match.id, match);
     });
     return Array.from(byId.values());
-  }, [liveFeed, upcomingMatchesRaw, matches]);
+  }, [liveFeed, upcomingMatchesSource, matches]);
   const searchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) {
@@ -363,7 +335,7 @@ export default function HomePage() {
       });
     });
 
-    upcomingMatchesRaw.slice(0, 3).forEach((match) => {
+    upcomingMatchesSource.slice(0, 3).forEach((match) => {
       cards.push({
         id: `upcoming-${match.id}`,
         title: `${match.homeTeam} vs ${match.awayTeam} kicks off soon`,
@@ -389,7 +361,7 @@ export default function HomePage() {
       });
 
     return cards.slice(0, 9);
-  }, [liveFeed, upcomingMatchesRaw, matches]);
+  }, [liveFeed, upcomingMatchesSource, matches]);
 
   function toggleFavorite(matchId: string) {
     setFavoriteIds((prev) => {
@@ -432,17 +404,11 @@ export default function HomePage() {
     matchesError instanceof ApiClientError && matchesError.status === 503;
   const heroLoading =
     liveMatchesLoading ||
-    (liveMatchesRaw.length === 0 &&
-      todayLiveLoading &&
-      yesterdayLiveLoading &&
-      tomorrowLiveLoading);
+    (liveMatchesSource.length === 0 && fallbackLiveLoading);
   const liveFallbackLoading =
     status === "inprogress" &&
     filteredMatches.length === 0 &&
-    (liveMatchesLoading ||
-      todayLiveLoading ||
-      yesterdayLiveLoading ||
-      tomorrowLiveLoading);
+    (liveMatchesLoading || fallbackLiveLoading);
   const matchesSectionLoading = matchesLoading || liveFallbackLoading;
 
   return (
@@ -456,22 +422,6 @@ export default function HomePage() {
               className="h-20 w-auto object-contain md:h-14"
             />
           </div>
-
-          <nav className="hidden items-center gap-9 md:flex">
-            <button className="border-t-2 animate-pulse  rounded-2xl p-1 bg-gray border-emerald-500 pb-1 text-base font-semibold text-emerald-500 flex items-center gap-2">
-              <img src="icon.png" alt="" className="h-5 w-5 " />
-              Live Streaming
-            </button>
-            <button className="text-base font-medium text-var(--ls-muted)">
-              News
-            </button>
-            <button className="text-base font-medium text-var(--ls-muted)">
-              Live score
-            </button>
-            <button className="text-base font-medium text-var(--ls-muted)">
-              Highlight
-            </button>
-          </nav>
 
           <div
             className="relative flex items-center gap-2"
@@ -613,6 +563,28 @@ export default function HomePage() {
                       </span>
                     </Link>
                   ))}
+                  {ADSTERRA_NOTIFICATION_SLOT && (
+                    <div className="mt-2 rounded-lg border border-slate-700 bg-[#0f182a] p-2">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Sponsored
+                        </p>
+                        <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                          Ad
+                        </span>
+                      </div>
+                      <div className="flex justify-center">
+                        <AdsterraSlot
+                          zoneKey={ADSTERRA_NOTIFICATION_SLOT}
+                          host={ADSTERRA_HOST}
+                          width={300}
+                          height={250}
+                          format="banner"
+                          className="overflow-hidden rounded-md"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -621,30 +593,7 @@ export default function HomePage() {
       </header>
 
       <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
-        <section className="mb-2.5 rounded-xl border border-(--ls-border) bg-(--ls-surface) p-2.5">
-          <div className="hidden justify-center md:flex">
-            <AdsterraSlot
-              zoneKey={ADSTERRA_BANNER_728X90}
-              host={ADSTERRA_HOST}
-              width={728}
-              height={90}
-              format="banner"
-              className="overflow-hidden rounded-md"
-            />
-          </div>
-          <div className="flex justify-center md:hidden">
-            <AdsterraSlot
-              zoneKey={ADSTERRA_BANNER_320X50}
-              host={ADSTERRA_HOST}
-              width={320}
-              height={50}
-              format="banner"
-              className="overflow-hidden rounded-md"
-            />
-          </div>
-        </section>
-
-        <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)] xl:grid-cols-[248px_minmax(0,1fr)_336px]">
+        <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)]">
           <aside className="hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) p-3 md:block">
             <div className="flex items-center justify-between border-b border-(--ls-border) pb-3">
               <p className="text-lg font-semibold text-(--ls-text)">Leagues</p>
@@ -1069,6 +1018,26 @@ export default function HomePage() {
                   )}
                 </section>
 
+                {ADSTERRA_NATIVE_CODE && (
+                  <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Sponsored
+                      </p>
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                        Native Banner
+                      </span>
+                    </div>
+                    <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
+                      <AdsterraNativeSlot
+                        code={ADSTERRA_NATIVE_CODE}
+                        height={320}
+                        className="overflow-hidden rounded-md"
+                      />
+                    </div>
+                  </section>
+                )}
+
                 <section className="overflow-hidden rounded-xl border border-slate-800 bg-[#090d18]">
                   <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2.5">
                     <p className="text-base font-bold text-slate-100">
@@ -1113,6 +1082,26 @@ export default function HomePage() {
                     </div>
                   )}
                 </section>
+
+                {ADSTERRA_NATIVE_CODE && (
+                  <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Sponsored
+                      </p>
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                        Native Banner
+                      </span>
+                    </div>
+                    <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
+                      <AdsterraNativeSlot
+                        code={ADSTERRA_NATIVE_CODE}
+                        height={320}
+                        className="overflow-hidden rounded-md"
+                      />
+                    </div>
+                  </section>
+                )}
               </>
             )}
 
@@ -1164,66 +1153,6 @@ export default function HomePage() {
             )}
           </section>
 
-          <aside className="hidden xl:block">
-            <div className="sticky top-[80px] space-y-2.5">
-              <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-300">
-                    Sponsored
-                  </p>
-                  <span className="text-[10px] uppercase tracking-[0.15em] text-slate-400">
-                    Ad
-                  </span>
-                </div>
-                <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
-                  <AdsterraSlot
-                    zoneKey={ADSTERRA_RIGHT_TOP}
-                    host={ADSTERRA_HOST}
-                    width={300}
-                    height={250}
-                    format="banner"
-                    className="overflow-hidden rounded-md"
-                  />
-                </div>
-              </section>
-
-              <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Partner Slot
-                  </p>
-                </div>
-                <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
-                  <AdsterraSlot
-                    zoneKey={ADSTERRA_RIGHT_MIDDLE}
-                    host={ADSTERRA_HOST}
-                    width={300}
-                    height={250}
-                    format="banner"
-                    className="overflow-hidden rounded-md"
-                  />
-                </div>
-              </section>
-
-              <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Premium Banner
-                  </p>
-                </div>
-                <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
-                  <AdsterraSlot
-                    zoneKey={ADSTERRA_RIGHT_BOTTOM}
-                    host={ADSTERRA_HOST}
-                    width={300}
-                    height={250}
-                    format="banner"
-                    className="overflow-hidden rounded-md"
-                  />
-                </div>
-              </section>
-            </div>
-          </aside>
         </div>
       </div>
     </main>

@@ -22,13 +22,17 @@ npm install
 ```env
 SPORTSRC_API_KEY=your_api_key_here
 NEXT_PUBLIC_ADSTERRA_HOST=www.highperformanceformat.com
-NEXT_PUBLIC_ADSTERRA_SLOT_300X250=your_300x250_zone_key
-NEXT_PUBLIC_ADSTERRA_SLOT_728X90=your_728x90_zone_key
-NEXT_PUBLIC_ADSTERRA_SLOT_320X50=your_320x50_zone_key
-NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_TOP=your_zone_key_top
-NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_MIDDLE=your_zone_key_middle
-NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_BOTTOM=your_zone_key_bottom
+NEXT_PUBLIC_ADSTERRA_SLOT_300X250=bd6ba770f8a8a2808dd8186e788eaa8a
+NEXT_PUBLIC_ADSTERRA_NATIVE_HOME_FEATURED=be45281b177036bd9127a44bb09d77de
+NEXT_PUBLIC_ADSTERRA_NATIVE_HOME_MID=be45281b177036bd9127a44bb09d77de
+NEXT_PUBLIC_ADSTERRA_NATIVE_MATCH_BELOW_PLAYER=be45281b177036bd9127a44bb09d77de
+NEXT_PUBLIC_ADSTERRA_NATIVE_MATCH_LOWER=be45281b177036bd9127a44bb09d77de
+NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR_CODE=<script src="https://peacockvowel.com/3a/cc/1c/3acc1c206666a40839d03732974fd6df.js"></script>
+NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR_DELAY_MS=8000
 ```
+
+`NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR_CODE` should contain the exact Social Bar snippet from your Adsterra dashboard so it can be injected once near the end of the page.
+Leave any native slot env blank if you want to suppress that placement.
 
 3. Run dev server:
 
@@ -61,6 +65,8 @@ API key is never exposed client-side.
 - Date filter
 - Match cards with teams, scores, status, league/time
 - Match detail with stream source selector + iframe player
+- Homepage ad layout: no ad above hero, one native slot after featured matches, optional second native slot after the next content section, delayed Social Bar
+- Match detail ad layout: no ad above player, one native slot below the player, one lower-page native slot near related matches, delayed Social Bar
 - 404 handling with “Match not available (may be finished/removed)”
 - 503 handling with “Data updating, retrying…” and retry behavior
 - Client-only favorites in localStorage with quick filter

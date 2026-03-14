@@ -9,6 +9,7 @@ interface CheckRateLimitOptions {
   route: string;
   max: number;
   windowMs: number;
+  bucketId?: string;
 }
 
 export interface RateLimitResult {
@@ -66,7 +67,9 @@ export function checkRateLimit(
 ): RateLimitResult {
   const now = Date.now();
   const clientId = getClientId(request);
-  const key = `${options.route}:${clientId}`;
+  const key = options.bucketId
+    ? `${options.route}:${clientId}:${options.bucketId}`
+    : `${options.route}:${clientId}`;
   const store = getStore();
   const existing = store.get(key);
 

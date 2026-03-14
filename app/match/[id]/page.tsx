@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import SafeImage from "@/components/SafeImage";
 import StreamPlayer from "@/components/StreamPlayer";
@@ -16,15 +17,12 @@ import type { StreamSource } from "@/lib/types";
 
 const ADSTERRA_HOST =
   process.env.NEXT_PUBLIC_ADSTERRA_HOST || "www.highperformanceformat.com";
-const ADSTERRA_BANNER_300X250 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_300X250;
-const ADSTERRA_BANNER_728X90 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_728X90;
-const ADSTERRA_BANNER_320X50 = process.env.NEXT_PUBLIC_ADSTERRA_SLOT_320X50;
-const ADSTERRA_RIGHT_TOP =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_TOP || ADSTERRA_BANNER_300X250;
-const ADSTERRA_RIGHT_MIDDLE =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_MIDDLE || ADSTERRA_BANNER_300X250;
-const ADSTERRA_RIGHT_BOTTOM =
-  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_RIGHT_BOTTOM || ADSTERRA_BANNER_300X250;
+const ADSTERRA_DEFAULT_NATIVE_SLOT =
+  process.env.NEXT_PUBLIC_ADSTERRA_SLOT_300X250;
+const ADSTERRA_NOTIFICATION_SLOT =
+  process.env.NEXT_PUBLIC_ADSTERRA_NOTIFICATION_SLOT ||
+  ADSTERRA_DEFAULT_NATIVE_SLOT;
+const ADSTERRA_NATIVE_CODE = process.env.NEXT_PUBLIC_ADSTERRA_NATIVE_CODE;
 
 function SearchIcon() {
   return (
@@ -457,6 +455,28 @@ export default function MatchDetailPage() {
                       </span>
                     </Link>
                   ))}
+                  {ADSTERRA_NOTIFICATION_SLOT && (
+                    <div className="mt-2 rounded-lg border border-slate-700 bg-[#0f182a] p-2">
+                      <div className="mb-2 flex items-center justify-between">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                          Sponsored
+                        </p>
+                        <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                          Ad
+                        </span>
+                      </div>
+                      <div className="flex justify-center">
+                        <AdsterraSlot
+                          zoneKey={ADSTERRA_NOTIFICATION_SLOT}
+                          host={ADSTERRA_HOST}
+                          width={300}
+                          height={250}
+                          format="banner"
+                          className="overflow-hidden rounded-md"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -465,29 +485,6 @@ export default function MatchDetailPage() {
       </header>
 
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-2 py-3 md:px-4">
-        <section className="rounded-xl border border-(--ls-border) bg-(--ls-surface) p-2.5">
-          <div className="hidden justify-center md:flex">
-            <AdsterraSlot
-              zoneKey={ADSTERRA_BANNER_728X90}
-              host={ADSTERRA_HOST}
-              width={728}
-              height={90}
-              format="banner"
-              className="overflow-hidden rounded-md"
-            />
-          </div>
-          <div className="flex justify-center md:hidden">
-            <AdsterraSlot
-              zoneKey={ADSTERRA_BANNER_320X50}
-              host={ADSTERRA_HOST}
-              width={320}
-              height={50}
-              format="banner"
-              className="overflow-hidden rounded-md"
-            />
-          </div>
-        </section>
-
         {isLoading && (
           <div className="overflow-hidden rounded-xl border border-slate-800 bg-[#090d18] p-4">
             <div className="h-14 animate-pulse rounded bg-slate-800" />
@@ -791,61 +788,26 @@ export default function MatchDetailPage() {
               </article>
             </section>
 
-            <section className="grid gap-2.5 md:grid-cols-2 xl:grid-cols-3">
-              <article className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
-                <div className="mb-2 flex items-center justify-between">
+            {ADSTERRA_NATIVE_CODE && (
+              <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
+                <div className="mb-3 flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
                     Sponsored
                   </p>
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                    Native Banner
+                  </span>
                 </div>
                 <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
-                  <AdsterraSlot
-                    zoneKey={ADSTERRA_RIGHT_TOP}
-                    host={ADSTERRA_HOST}
-                    width={300}
-                    height={250}
-                    format="banner"
+                  <AdsterraNativeSlot
+                    code={ADSTERRA_NATIVE_CODE}
+                    height={320}
                     className="overflow-hidden rounded-md"
                   />
                 </div>
-              </article>
+              </section>
+            )}
 
-              <article className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Partner Slot
-                  </p>
-                </div>
-                <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
-                  <AdsterraSlot
-                    zoneKey={ADSTERRA_RIGHT_MIDDLE}
-                    host={ADSTERRA_HOST}
-                    width={300}
-                    height={250}
-                    format="banner"
-                    className="overflow-hidden rounded-md"
-                  />
-                </div>
-              </article>
-
-              <article className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    Premium Banner
-                  </p>
-                </div>
-                <div className="flex justify-center rounded-lg border border-slate-700 bg-[#0f182a] p-2">
-                  <AdsterraSlot
-                    zoneKey={ADSTERRA_RIGHT_BOTTOM}
-                    host={ADSTERRA_HOST}
-                    width={300}
-                    height={250}
-                    format="banner"
-                    className="overflow-hidden rounded-md"
-                  />
-                </div>
-              </article>
-            </section>
           </section>
         )}
       </div>

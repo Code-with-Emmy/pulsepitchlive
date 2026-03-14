@@ -2,28 +2,24 @@
 
 import { useEffect, useRef } from "react";
 
-interface AdsterraSlotProps {
-  zoneKey?: string;
-  width: number;
-  height: number;
+interface AdsterraNativeSlotProps {
+  code?: string;
   className?: string;
-  host?: string;
-  format?: "iframe" | "banner";
+  height?: number;
 }
 
-export default function AdsterraSlot({
-  zoneKey,
-  width,
-  height,
+export default function AdsterraNativeSlot({
+  code,
   className,
-  host = "www.highperformanceformat.com",
-  format = "iframe",
-}: AdsterraSlotProps) {
+  height = 320,
+}: AdsterraNativeSlotProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const iframe = iframeRef.current;
-    if (!iframe || !zoneKey) {
+    const nativeCode = code?.trim() ?? "";
+
+    if (!iframe || !nativeCode) {
       return;
     }
 
@@ -32,8 +28,8 @@ export default function AdsterraSlot({
       return;
     }
 
-    const normalizedFormat = format === "banner" ? "iframe" : format;
-    const markup = `<!DOCTYPE html>
+    document.open();
+    document.write(`<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -46,22 +42,8 @@ export default function AdsterraSlot({
       }
     </style>
   </head>
-  <body>
-    <script type="text/javascript">
-      window.atOptions = {
-        key: '${zoneKey}',
-        format: '${normalizedFormat}',
-        height: ${height},
-        width: ${width},
-        params: {}
-      };
-    </script>
-    <script type="text/javascript" src="https://${host}/${zoneKey}/invoke.js"></script>
-  </body>
-</html>`;
-
-    document.open();
-    document.write(markup);
+  <body>${nativeCode}</body>
+</html>`);
     document.close();
 
     return () => {
@@ -71,16 +53,16 @@ export default function AdsterraSlot({
       );
       document.close();
     };
-  }, [format, height, host, width, zoneKey]);
+  }, [code]);
 
-  if (!zoneKey) {
+  if (!code?.trim()) {
     return (
       <div
         className={className}
-        style={{ width, height }}
+        style={{ height }}
       >
         <div className="flex h-full w-full items-center justify-center rounded-md border border-dashed border-slate-600 bg-[#0f182a] text-xs text-slate-400">
-          Configure Adsterra slot
+          Configure Adsterra native slot
         </div>
       </div>
     );
@@ -89,9 +71,9 @@ export default function AdsterraSlot({
   return (
     <iframe
       ref={iframeRef}
-      title="Sponsored content"
+      title="Sponsored native content"
       className={className}
-      style={{ width, height }}
+      style={{ width: "100%", height }}
       scrolling="no"
       frameBorder="0"
     />
