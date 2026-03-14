@@ -13,9 +13,8 @@ function getPermission(): BrowserAlertsPermission {
 }
 
 export function useBrowserAlerts() {
-  const [permission, setPermission] = useState<BrowserAlertsPermission>(
-    getPermission,
-  );
+  const [permission, setPermission] =
+    useState<BrowserAlertsPermission>("unsupported");
 
   useEffect(() => {
     setPermission(getPermission());
