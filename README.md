@@ -19,17 +19,6 @@ npm install
 
 2. Create `.env.local` in project root:
 
-```env
-SPORTSRC_API_KEY=your_api_key_here
-NEXT_PUBLIC_ADSTERRA_HOST=www.highperformanceformat.com
-NEXT_PUBLIC_ADSTERRA_SLOT_300X250=bd6ba770f8a8a2808dd8186e788eaa8a
-NEXT_PUBLIC_ADSTERRA_NATIVE_HOME_FEATURED=be45281b177036bd9127a44bb09d77de
-NEXT_PUBLIC_ADSTERRA_NATIVE_HOME_MID=be45281b177036bd9127a44bb09d77de
-NEXT_PUBLIC_ADSTERRA_NATIVE_MATCH_BELOW_PLAYER=be45281b177036bd9127a44bb09d77de
-NEXT_PUBLIC_ADSTERRA_NATIVE_MATCH_LOWER=be45281b177036bd9127a44bb09d77de
-NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR_CODE=<script src="https://peacockvowel.com/3a/cc/1c/3acc1c206666a40839d03732974fd6df.js"></script>
-NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR_DELAY_MS=8000
-```
 
 `NEXT_PUBLIC_ADSTERRA_SOCIAL_BAR_CODE` should contain the exact Social Bar snippet from your Adsterra dashboard so it can be injected once near the end of the page.
 Leave any native slot env blank if you want to suppress that placement.
