@@ -48,7 +48,7 @@ const OPTIONS: Array<{
 
 export default function Tabs({ value, onChange }: TabsProps) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto py-1">
+    <div className="ls-segmented flex items-center gap-1.5 overflow-x-auto py-1">
       {OPTIONS.map((option) => {
         const active = option.id === value;
         const Icon = option.Icon;
@@ -57,15 +57,18 @@ export default function Tabs({ value, onChange }: TabsProps) {
             key={option.id}
             type="button"
             onClick={() => onChange(option.id)}
-            className={`inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition ${
-              active
-                ? "border-emerald-500 bg-emerald-500 text-black shadow-sm"
-                : "border-[var(--ls-border)] bg-[var(--ls-surface)] text-[var(--ls-text)] hover:border-emerald-400"
+            data-active={active}
+            className={`ls-segmented-button inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold whitespace-nowrap ${
+              active ? "" : "text-[var(--ls-text)]"
             }`}
           >
             <span className="relative inline-flex h-5 w-5 items-center justify-center">
               <Icon />
-              <span className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full ${option.dotClass} ls-blink`} />
+              <span
+                className={`absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full ${option.dotClass} ${
+                  active ? "ls-blink" : ""
+                }`}
+              />
             </span>
             {option.label}
           </button>

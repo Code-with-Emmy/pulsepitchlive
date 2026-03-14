@@ -43,9 +43,12 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="inline-flex h-9 items-center rounded-full border border-[var(--ls-border)] bg-[var(--ls-surface)] px-3 text-sm font-semibold text-[var(--ls-text)] transition hover:border-emerald-500"
+      className="ls-control ls-control-muted inline-flex h-9 items-center gap-2 px-3 text-sm font-semibold"
       aria-label="Toggle theme"
     >
+      <span className="text-base leading-none" suppressHydrationWarning>
+        {theme === "dark" ? "☀" : "☾"}
+      </span>
       <span suppressHydrationWarning>
         {theme === "dark" ? "Light" : "Dark"}
       </span>

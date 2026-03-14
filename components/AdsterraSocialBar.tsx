@@ -12,17 +12,21 @@ export default function AdsterraSocialBar({
   delayMs = 8000,
 }: AdsterraSocialBarProps) {
   useEffect(() => {
-    if (!code?.trim()) {
+    const socialBarCode = code?.trim();
+    if (!socialBarCode) {
       return;
     }
 
+    let injected = false;
+    let timerId = 0;
+
     const mountSocialBar = () => {
-      const container = document.createElement("div");
-      container.dataset.adsterraSocialBar = "true";
-      document.body.appendChild(container);
+      if (injected) {
+        return;
+      }
 
       const template = document.createElement("template");
-      template.innerHTML = code.trim();
+      template.innerHTML = socialBarCode;
 
       const nodes = Array.from(template.content.childNodes);
 
@@ -33,32 +37,72 @@ export default function AdsterraSocialBar({
 
         if (node.nodeName === "SCRIPT") {
           const sourceScript = node as HTMLScriptElement;
+          const scriptSrc = sourceScript.getAttribute("src");
+
+          if (
+            scriptSrc &&
+            document.querySelector(
+              `script[data-adsterra-social-bar="true"][src="${scriptSrc}"]`,
+            )
+          ) {
+            injected = true;
+            continue;
+          }
+
           const script = document.createElement("script");
 
           for (const { name, value } of Array.from(sourceScript.attributes)) {
             script.setAttribute(name, value);
           }
 
-          script.async = false;
+          script.dataset.adsterraSocialBar = "true";
+          script.async = true;
           script.textContent = sourceScript.textContent;
-          container.appendChild(script);
+          document.body.appendChild(script);
           continue;
         }
 
-        container.appendChild(node.cloneNode(true));
+        const element = node.cloneNode(true);
+        if (element instanceof HTMLElement) {
+          element.dataset.adsterraSocialBar = "true";
+        }
+        document.body.appendChild(element);
       }
 
-      return container;
+      injected = true;
     };
 
-    let container: HTMLDivElement | null = null;
-    const timerId = window.setTimeout(() => {
-      container = mountSocialBar();
+    const triggerMount = () => {
+      if (timerId) {
+        window.clearTimeout(timerId);
+      }
+      mountSocialBar();
+      cleanupListeners();
+    };
+
+    const cleanupListeners = () => {
+      window.removeEventListener("pointerdown", triggerMount);
+      window.removeEventListener("keydown", triggerMount);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        triggerMount();
+      }
+    };
+
+    timerId = window.setTimeout(() => {
+      triggerMount();
     }, delayMs);
+
+    window.addEventListener("pointerdown", triggerMount, { once: true });
+    window.addEventListener("keydown", triggerMount, { once: true });
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.clearTimeout(timerId);
-      container?.remove();
+      cleanupListeners();
     };
   }, [code, delayMs]);
 

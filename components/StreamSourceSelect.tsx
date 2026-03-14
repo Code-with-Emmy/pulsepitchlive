@@ -44,6 +44,8 @@ export default function StreamSourceSelect({
         {sources.map((source, index) => {
           const active = source.url === selectedUrl;
           const title = sourceTitle(source, index);
+          const qualityLabel = source.hd ? "HD" : "SD";
+          const languageLabel = source.language || "Unknown";
 
           return (
             <button
@@ -51,7 +53,7 @@ export default function StreamSourceSelect({
               type="button"
               onClick={() => onChange(source.url)}
               aria-pressed={active}
-              className={`ls-stream-source-card w-full rounded-xl border p-3 text-left transition ${
+              className={`ls-stream-source-card w-full rounded-2xl border p-3.5 text-left transition ${
                 active
                   ? "border-emerald-500 bg-emerald-500/10 shadow-[0_0_0_1px_rgba(16,185,129,0.25)]"
                   : "border-[var(--ls-border)] bg-[var(--ls-surface)] hover:border-emerald-400/70"
@@ -74,6 +76,17 @@ export default function StreamSourceSelect({
                   }`}
                 >
                   {index + 1}
+                </span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--ls-muted)]">
+                <span className="rounded-full border border-[var(--ls-border)] px-2 py-1">
+                  {qualityLabel}
+                </span>
+                <span className="rounded-full border border-[var(--ls-border)] px-2 py-1">
+                  {languageLabel}
+                </span>
+                <span className="rounded-full border border-[var(--ls-border)] px-2 py-1">
+                  {source.source ?? "feed"}
                 </span>
               </div>
             </button>

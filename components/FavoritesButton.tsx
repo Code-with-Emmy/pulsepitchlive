@@ -16,14 +16,15 @@ export default function FavoritesButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`inline-flex h-9 items-center justify-center rounded-full border px-3 text-sm font-semibold transition ${
+      className={`ls-control inline-flex h-10 items-center justify-center gap-1.5 px-3 text-sm font-semibold ${
         active
-          ? "border-rose-500 bg-rose-500 text-white"
-          : "border-(--ls-border) bg-(--ls-panel-alt) text-(--ls-text) hover:border-emerald-400"
+          ? "border-rose-500/55 bg-rose-500 text-white shadow-[0_12px_22px_rgba(244,63,94,0.28)]"
+          : "ls-control-muted"
       } ${disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer"}`}
       aria-label={active ? "Remove from favorites" : "Add to favorites"}
     >
-      {active ? "★" : "☆"}
+      <span className="text-base leading-none">{active ? "★" : "☆"}</span>
+      <span className="hidden sm:inline">{active ? "Saved" : "Save"}</span>
     </button>
   );
 }

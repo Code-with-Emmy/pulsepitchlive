@@ -475,7 +475,7 @@ export default function HomePage() {
                 setSearchOpen((prev) => !prev);
                 setNotificationsOpen(false);
               }}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--ls-border) bg-(--ls-surface) text-base text-(--ls-muted) transition hover:border-emerald-400"
+              className="ls-control ls-control-muted inline-flex h-9 w-9 items-center justify-center text-base text-(--ls-muted)"
               aria-label="Search matches"
             >
               <SearchIcon />
@@ -486,7 +486,7 @@ export default function HomePage() {
                 setNotificationsOpen((prev) => !prev);
                 setSearchOpen(false);
               }}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--ls-border) bg-(--ls-surface) text-base text-(--ls-muted) transition hover:border-emerald-400"
+              className="ls-control ls-control-muted relative inline-flex h-9 w-9 items-center justify-center text-base text-(--ls-muted)"
               aria-label="Open notifications"
             >
               <BellIcon />
@@ -497,7 +497,7 @@ export default function HomePage() {
             <ThemeToggle />
 
             {searchOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
+              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
                 <div className="border-b border-var(--ls-border) p-3">
                   <input
                     type="text"
@@ -559,7 +559,7 @@ export default function HomePage() {
             )}
 
             {notificationsOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
+              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
                 <div className="flex items-center justify-between border-b border-(--ls-border) px-3 py-2.5">
                   <p className="text-sm font-semibold text-(--ls-text)">
                     Match Alerts
@@ -641,7 +641,7 @@ export default function HomePage() {
 
       <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
         <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)]">
-          <aside className="hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) p-3 md:block">
+          <aside className="ls-card hidden p-3 md:block">
             <div className="flex items-center justify-between border-b border-(--ls-border) pb-3">
               <p className="text-lg font-semibold text-(--ls-text)">Leagues</p>
               <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-semibold text-emerald-300">
@@ -763,7 +763,7 @@ export default function HomePage() {
           </aside>
 
           <section className="space-y-2.5">
-            <section className="rounded-xl border border-(--ls-border) bg-(--ls-surface) p-3">
+            <section className="ls-card p-3">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                 <div className="flex flex-wrap items-end gap-2.5">
                   <SportSelector
@@ -773,7 +773,7 @@ export default function HomePage() {
                     loading={sportsLoading}
                   />
 
-                  <label className="flex min-w-[170px] flex-col gap-1.5">
+                  <label className="flex min-w-[170px] flex-col gap-2">
                     <span className="mono-label text-xs uppercase tracking-[0.14em] text-(--ls-muted)">
                       Date
                     </span>
@@ -781,7 +781,7 @@ export default function HomePage() {
                       type="date"
                       value={date}
                       onChange={(event) => setDate(event.target.value)}
-                      className="h-11 rounded-lg border border-(--ls-border) bg-(--ls-panel-alt) px-3 text-base text-(--ls-text) outline-none ring-emerald-400 transition focus:ring-2"
+                      className="ls-select h-12 px-4 text-base font-semibold text-(--ls-text) outline-none ring-emerald-400 transition focus:ring-2"
                     />
                   </label>
                 </div>
@@ -790,10 +790,10 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={toggleFavoritesOnly}
-                    className={`h-10 rounded-full border px-4 text-sm font-semibold transition ${
+                    className={`ls-control inline-flex h-10 items-center px-4 text-sm font-semibold ${
                       favoritesOnly
-                        ? "border-emerald-500 bg-emerald-500 text-black"
-                        : "border-(--ls-border) bg-(--ls-panel-alt) text-(--ls-text) hover:border-emerald-400"
+                        ? "ls-control-solid"
+                        : "ls-control-muted"
                     }`}
                   >
                     {favoritesOnly ? "Favorites On" : "Favorites"}
@@ -801,10 +801,10 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={togglePinnedOnly}
-                    className={`h-10 rounded-full border px-4 text-sm font-semibold transition ${
+                    className={`ls-control inline-flex h-10 items-center px-4 text-sm font-semibold ${
                       pinnedOnly
-                        ? "border-emerald-500 bg-emerald-500 text-black"
-                        : "border-(--ls-border) bg-(--ls-panel-alt) text-(--ls-text) hover:border-emerald-400"
+                        ? "ls-control-solid"
+                        : "ls-control-muted"
                     }`}
                   >
                     {pinnedOnly ? "Pinned On" : "Pinned"}
@@ -814,7 +814,7 @@ export default function HomePage() {
                     onClick={() => {
                       void mutate();
                     }}
-                    className="h-10 rounded-full border border-(--ls-border) bg-(--ls-panel-alt) px-4 text-sm font-semibold text-(--ls-text) transition hover:border-emerald-400"
+                    className="ls-control ls-control-muted inline-flex h-10 items-center px-4 text-sm font-semibold"
                   >
                     Refresh
                   </button>
@@ -1085,7 +1085,7 @@ export default function HomePage() {
                   </section>
                 )}
 
-                <section className="overflow-hidden rounded-xl border border-slate-800 bg-[#090d18]">
+                <section className="ls-card overflow-hidden">
                   <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2.5">
                     <p className="text-base font-bold text-slate-100">
                       All Matches
@@ -1114,7 +1114,7 @@ export default function HomePage() {
 
                   {!matchesSectionLoading && displayMatches.length > 0 && (
                     <div>
-                      {displayMatches.map((match) => (
+                      {displayMatches.map((match, index) => (
                         <MatchCard
                           key={match.id}
                           match={match}
@@ -1124,6 +1124,7 @@ export default function HomePage() {
                             match.league ?? "Unknown League",
                           )}
                           onToggleLeaguePin={toggleLeaguePin}
+                          smartLinkEnabled={index < 4}
                         />
                       ))}
                     </div>
@@ -1131,7 +1132,7 @@ export default function HomePage() {
                 </section>
 
                 {ADSTERRA_NATIVE_CODE && (
-                  <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
+                  <section className="ls-card p-3">
                     <div className="mb-3 flex items-center justify-between">
                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
                         Sponsored
@@ -1153,7 +1154,7 @@ export default function HomePage() {
             )}
 
             {status !== "notstarted" && (
-              <section className="overflow-hidden rounded-xl border border-slate-800 bg-[#090d18]">
+              <section className="ls-card overflow-hidden">
                 <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2.5">
                   <p className="text-base font-bold text-slate-100">
                     Upcoming Matches
@@ -1182,7 +1183,7 @@ export default function HomePage() {
 
                 {!upcomingLoading && upcomingMatches.length > 0 && (
                   <div>
-                    {upcomingMatches.map((match) => (
+                    {upcomingMatches.map((match, index) => (
                       <MatchCard
                         key={`upcoming-inline-${match.id}`}
                         match={match}
@@ -1192,6 +1193,7 @@ export default function HomePage() {
                           match.league ?? "Unknown League",
                         )}
                         onToggleLeaguePin={toggleLeaguePin}
+                        smartLinkEnabled={index < 2}
                       />
                     ))}
                   </div>

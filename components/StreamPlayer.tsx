@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { triggerAdsterraSmartLink } from "@/lib/adsterra-smart-link";
 
 interface StreamPlayerProps {
   src: string;
@@ -53,6 +54,7 @@ export default function StreamPlayer({ src, onLoad, onError }: StreamPlayerProps
   const [playerOverlayArmed, setPlayerOverlayArmed] = useState(true);
 
   function handlePlayerOverlayClick() {
+    triggerAdsterraSmartLink("adsterra_smart_link_player_last_opened_at");
     window.dispatchEvent(
       new CustomEvent(POPUNDER_TRIGGER_EVENT, {
         detail: { source: "stream-player-overlay" },
@@ -62,13 +64,13 @@ export default function StreamPlayer({ src, onLoad, onError }: StreamPlayerProps
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-[#050a14]">
-      <div className="relative aspect-video min-h-[220px] w-full bg-black sm:min-h-0">
+    <div className="ls-player-shell">
+      <div className="relative aspect-video min-h-[220px] w-full rounded-[22px] bg-black sm:min-h-0">
         <iframe
           key={autoplaySrc}
           src={autoplaySrc}
           title="Live stream player"
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 h-full w-full rounded-[22px]"
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
           allowFullScreen
           onLoad={onLoad}
@@ -78,15 +80,23 @@ export default function StreamPlayer({ src, onLoad, onError }: StreamPlayerProps
           <button
             type="button"
             onClick={handlePlayerOverlayClick}
-            className="absolute inset-0 z-[5] flex items-center justify-center bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.24))] sm:items-end"
+            className="absolute inset-0 z-[5] flex items-center justify-center bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.34))] sm:items-end"
             aria-label="Open stream"
             style={{ touchAction: "manipulation" }}
           >
-            <span className="rounded-full border border-white/15 bg-black/55 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur sm:mb-4 sm:px-3 sm:py-1.5 sm:text-xs">
+            <span className="rounded-full border border-white/15 bg-black/60 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/88 shadow-[0_12px_24px_rgba(0,0,0,0.25)] backdrop-blur sm:mb-5 sm:px-4 sm:py-2 sm:text-xs">
               Tap to continue
             </span>
           </button>
         )}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] flex items-center justify-between bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.68))] px-3 pb-3 pt-10 text-white/72">
+          <span className="mono-label text-[10px] uppercase tracking-[0.18em] sm:text-[11px]">
+            Live Stream
+          </span>
+          <span className="rounded-full border border-white/12 bg-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/85">
+            Mobile Ready
+          </span>
+        </div>
       </div>
     </div>
   );

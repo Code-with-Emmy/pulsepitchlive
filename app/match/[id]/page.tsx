@@ -343,7 +343,7 @@ export default function MatchDetailPage() {
                 setSearchOpen((prev) => !prev);
                 setNotificationsOpen(false);
               }}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--ls-border) bg-(--ls-surface) text-base text-var(--ls-muted) transition hover:border-emerald-400"
+              className="ls-control ls-control-muted inline-flex h-9 w-9 items-center justify-center text-base text-var(--ls-muted)"
               aria-label="Search matches"
             >
               <SearchIcon />
@@ -354,7 +354,7 @@ export default function MatchDetailPage() {
                 setNotificationsOpen((prev) => !prev);
                 setSearchOpen(false);
               }}
-              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-(--ls-border) bg-(--ls-surface) text-base text-(--ls-muted) transition hover:border-emerald-400"
+              className="ls-control ls-control-muted relative inline-flex h-9 w-9 items-center justify-center text-base text-(--ls-muted)"
               aria-label="Open notifications"
             >
               <BellIcon />
@@ -374,13 +374,13 @@ export default function MatchDetailPage() {
               onClick={() => {
                 void mutate();
               }}
-              className="h-9 rounded-full border border-(--ls-border) bg-(--ls-panel-alt) px-4 text-sm font-semibold text-(--ls-text) transition hover:border-emerald-400"
+              className="ls-control ls-control-muted h-9 px-4 text-sm font-semibold"
             >
               Refresh
             </button>
 
             {searchOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
+              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
                 <div className="border-b border-(--ls-border) p-3">
                   <input
                     type="text"
@@ -442,7 +442,7 @@ export default function MatchDetailPage() {
             )}
 
             {notificationsOpen && (
-              <div className="absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-xl border border-(--ls-border) bg-(--ls-surface) shadow-[0_20px_50px_rgba(2,10,24,0.28)]">
+              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
                 <div className="flex items-center justify-between border-b border-(--ls-border) px-3 py-2.5">
                   <p className="text-sm font-semibold text-(--ls-text)">
                     Match Alerts
@@ -524,7 +524,7 @@ export default function MatchDetailPage() {
 
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-2 py-3 md:px-4">
         {isLoading && (
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-[#090d18] p-4">
+          <div className="ls-card overflow-hidden p-4">
             <div className="h-14 animate-pulse rounded bg-slate-800" />
             <div className="mt-3 h-72 animate-pulse rounded bg-slate-800" />
           </div>
@@ -635,7 +635,7 @@ export default function MatchDetailPage() {
               </div>
             </article>
 
-            <section className="ls-match-panel overflow-hidden rounded-xl border border-slate-800 bg-[#090d18] p-4 md:p-5">
+            <section className="ls-match-panel ls-card overflow-hidden p-4 md:p-5">
               <h2 className="ls-match-panel-title inline-flex items-center gap-2 text-lg font-bold text-white">
                 <span className="ls-blink inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
                 <span>Live Stream</span>
@@ -690,7 +690,7 @@ export default function MatchDetailPage() {
             </section>
 
             <section className="grid gap-3 lg:grid-cols-2">
-              <article className="ls-match-list overflow-hidden rounded-xl border border-slate-800 bg-[#090d18]">
+              <article className="ls-match-list ls-card overflow-hidden">
                 <div className="ls-match-list-head border-b border-slate-800 px-4 py-2.5">
                   <h2 className="ls-match-list-title text-base font-bold text-slate-100">
                     Other Live Matches
@@ -757,7 +757,7 @@ export default function MatchDetailPage() {
                 )}
               </article>
 
-              <article className="ls-match-list overflow-hidden rounded-xl border border-slate-800 bg-[#090d18]">
+              <article className="ls-match-list ls-card overflow-hidden">
                 <div className="ls-match-list-head border-b border-slate-800 px-4 py-2.5">
                   <h2 className="ls-match-list-title text-base font-bold text-slate-100">
                     Incoming Matches
