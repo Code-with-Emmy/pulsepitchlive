@@ -6,6 +6,7 @@ import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 import MatchCard from "@/components/MatchCard";
+import MatchRailCard from "@/components/MatchRailCard";
 import SafeImage from "@/components/SafeImage";
 import SportSelector from "@/components/SportSelector";
 import Tabs from "@/components/Tabs";
@@ -35,7 +36,13 @@ const ADSTERRA_DEFAULT_NATIVE_SLOT =
 const ADSTERRA_NOTIFICATION_SLOT =
   process.env.NEXT_PUBLIC_ADSTERRA_NOTIFICATION_SLOT ||
   ADSTERRA_DEFAULT_NATIVE_SLOT;
+const ADSTERRA_TOP_SLOT =
+  process.env.NEXT_PUBLIC_ADSTERRA_TOP_SLOT || ADSTERRA_DEFAULT_NATIVE_SLOT;
 const ADSTERRA_NATIVE_CODE = process.env.NEXT_PUBLIC_ADSTERRA_NATIVE_CODE;
+const HOMEPAGE_UPCOMING_LIMIT = 48;
+const HOMEPAGE_SIDEBAR_LEAGUES_LIMIT = 40;
+const HOMEPAGE_HIGHLIGHT_LIMIT = 10;
+const HOMEPAGE_PRIMARY_LEAGUE_GROUP_LIMIT = 20;
 
 function SearchIcon() {
   return (
@@ -78,6 +85,24 @@ function PlayIcon() {
       <path d="M8 6.5a1 1 0 0 1 1.53-.85l8 5.5a1 1 0 0 1 0 1.7l-8 5.5A1 1 0 0 1 8 17.5v-11Z" />
     </svg>
   );
+}
+
+function leaguePriority(name?: string): number {
+  const normalized = (name ?? "").trim().toLowerCase();
+  if (normalized === "premier league") {
+    return 0;
+  }
+
+  return 1;
+}
+
+function compareLeagueNames(left?: string, right?: string): number {
+  const priorityGap = leaguePriority(left) - leaguePriority(right);
+  if (priorityGap !== 0) {
+    return priorityGap;
+  }
+
+  return (left ?? "").localeCompare(right ?? "");
 }
 
 export default function HomePage() {
@@ -171,7 +196,9 @@ export default function HomePage() {
       );
     }
 
-    return next;
+    return [...next].sort((a, b) =>
+      compareLeagueNames(a.league, b.league),
+    );
   }, [favoriteIds, favoritesOnly, pinnedLeagues, pinnedOnly, matches]);
 
   const upcomingMatchesSource =
@@ -180,7 +207,10 @@ export default function HomePage() {
     status === "inprogress" ? matches : liveMatchesRaw;
 
   const upcomingMatches = useMemo(
-    () => upcomingMatchesSource.slice(0, 8),
+    () =>
+      [...upcomingMatchesSource]
+        .sort((a, b) => compareLeagueNames(a.league, b.league))
+        .slice(0, HOMEPAGE_UPCOMING_LIMIT),
     [upcomingMatchesSource],
   );
 
@@ -235,7 +265,7 @@ export default function HomePage() {
     });
 
     return Array.from(map.values()).sort((a, b) =>
-      a.name.localeCompare(b.name),
+      compareLeagueNames(a.name, b.name),
     );
   }, [matches, upcomingMatchesSource, liveMatchesSource]);
 
@@ -265,7 +295,9 @@ export default function HomePage() {
       );
     }
 
-    return next;
+    return [...next].sort((a, b) =>
+      compareLeagueNames(a.league, b.league),
+    );
   }, [liveFeed, favoritesOnly, favoriteIds, pinnedOnly, pinnedLeagues]);
   const displayMatches = useMemo(() => {
     if (status !== "inprogress") {
@@ -280,16 +312,38 @@ export default function HomePage() {
   }, [status, filteredMatches, filteredLiveFeed]);
   const featuredLiveMatch = useMemo(() => liveFeed[0] ?? null, [liveFeed]);
   const featuredLeagueName = featuredLiveMatch?.league ?? "Featured Match";
-  const sidebarLeagues = useMemo(() => apiLeagues.slice(0, 14), [apiLeagues]);
+  const sidebarLeagues = useMemo(
+    () => apiLeagues.slice(0, HOMEPAGE_SIDEBAR_LEAGUES_LIMIT),
+    [apiLeagues],
+  );
   const highlightMatches = useMemo(
-    () => displayMatches.slice(0, 3),
+    () => displayMatches.slice(0, HOMEPAGE_HIGHLIGHT_LIMIT),
     [displayMatches],
   );
+  const promoMatches = useMemo(
+    () => highlightMatches.slice(0, 2),
+    [highlightMatches],
+  );
+  const liveRailMatches = useMemo(
+    () => (status === "inprogress" ? displayMatches : filteredLiveFeed).slice(0, 12),
+    [displayMatches, filteredLiveFeed, status],
+  );
+  const upcomingRailMatches = useMemo(
+    () => upcomingMatches.slice(0, 12),
+    [upcomingMatches],
+  );
   const leagueGroup = useMemo(
-    () => sidebarLeagues.slice(0, 8),
+    () => sidebarLeagues.slice(0, HOMEPAGE_PRIMARY_LEAGUE_GROUP_LIMIT),
     [sidebarLeagues],
   );
-  const cupGroup = useMemo(() => sidebarLeagues.slice(8, 14), [sidebarLeagues]);
+  const cupGroup = useMemo(
+    () => sidebarLeagues.slice(HOMEPAGE_PRIMARY_LEAGUE_GROUP_LIMIT),
+    [sidebarLeagues],
+  );
+  const featuredLeagueShelf = useMemo(
+    () => [...leagueGroup, ...cupGroup].slice(0, 14),
+    [leagueGroup, cupGroup],
+  );
   const featuredLeagueMedia = useMemo(
     () => apiLeagues.find((league) => league.name === featuredLeagueName),
     [apiLeagues, featuredLeagueName],
@@ -448,7 +502,7 @@ export default function HomePage() {
   const matchesSectionLoading = matchesLoading || liveFallbackLoading;
 
   return (
-    <main className="min-h-screen bg-(--ls-bg) text-(--ls-text)">
+    <main className="ls-shell min-h-screen bg-(--ls-bg) text-(--ls-text)">
       <header className="sticky top-0 z-40 border-b border-(--ls-border) bg-(--ls-header) backdrop-blur">
         <div className="mx-auto flex h-[74px] w-full max-w-[1500px] items-center justify-between px-3 md:px-6">
           <div className="flex items-center gap-3">
@@ -457,6 +511,14 @@ export default function HomePage() {
               alt="PulsePitch Live"
               className="h-20 w-auto object-contain md:h-14"
             />
+            <div className="hidden md:block">
+              <p className="text-sm font-black uppercase tracking-[0.18em] text-(--ls-text)">
+                PulsePitch Live
+              </p>
+              <p className="text-xs font-semibold text-(--ls-muted)">
+                Live football streams, scores, and fixtures
+              </p>
+            </div>
           </div>
 
           <div
@@ -497,7 +559,7 @@ export default function HomePage() {
             <ThemeToggle />
 
             {searchOpen && (
-              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
+              <div className="ls-floating-panel fixed right-3 top-[84px] z-[140] w-[min(94vw,420px)] overflow-hidden rounded-2xl md:right-6">
                 <div className="border-b border-var(--ls-border) p-3">
                   <input
                     type="text"
@@ -559,7 +621,7 @@ export default function HomePage() {
             )}
 
             {notificationsOpen && (
-              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
+              <div className="ls-floating-panel fixed right-3 top-[84px] z-[160] w-[min(94vw,420px)] overflow-hidden rounded-2xl shadow-[0_28px_80px_rgba(0,0,0,0.52)] md:right-6">
                 <div className="flex items-center justify-between border-b border-(--ls-border) px-3 py-2.5">
                   <p className="text-sm font-semibold text-(--ls-text)">
                     Match Alerts
@@ -573,7 +635,7 @@ export default function HomePage() {
                     Enable browser alerts to get live updates for favorite or pinned matches while this page is open.
                   </div>
                 )}
-                <div className="max-h-[340px] overflow-y-auto p-2">
+                <div className="max-h-[calc(100vh-112px)] overflow-y-auto p-2">
                   {notifications.length === 0 && (
                     <p className="px-2 py-6 text-center text-sm text-(--ls-muted)">
                       No new notifications.
@@ -640,130 +702,265 @@ export default function HomePage() {
       </header>
 
       <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
-        <div className="grid gap-2.5 md:grid-cols-[248px_minmax(0,1fr)]">
-          <aside className="ls-card hidden p-3 md:block">
-            <div className="flex items-center justify-between border-b border-(--ls-border) pb-3">
-              <p className="text-lg font-semibold text-(--ls-text)">Leagues</p>
-              <span className="rounded-full bg-emerald-500/15 px-2 py-1 text-xs font-semibold text-emerald-300">
-                {totalLiveCount} Live
-              </span>
-            </div>
-
-            <div className="mt-3 space-y-1">
-              {leagueGroup.map((league) => {
-                const pinned = pinnedLeagues.includes(league.name);
-                return (
-                  <button
-                    key={`league-nav-${league.name}`}
-                    type="button"
-                    onClick={() => toggleLeaguePin(league.name)}
-                    className={`flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition ${
-                      pinned
-                        ? "bg-emerald-500/15 text-emerald-300"
-                        : "text-(--ls-muted) hover:bg-(--ls-panel-alt)"
-                    }`}
-                  >
-                    {league.logo ? (
-                      <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-                        <SafeImage
-                          src={league.logo}
-                          alt=""
-                          className="h-5 w-5 rounded object-contain"
-                          hideOnError
-                        />
-                        {league.flag && (
+        <section className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.65fr)_360px]">
+          {heroLoading ? (
+            <>
+              <section className="ls-billboard min-h-[360px] animate-pulse" />
+              <div className="grid gap-3">
+                <div className="ls-card h-[172px] animate-pulse" />
+                <div className="ls-card h-[172px] animate-pulse" />
+              </div>
+            </>
+          ) : featuredLiveMatch ? (
+            <>
+              <article className="ls-billboard min-h-[360px] p-6 md:p-8">
+                <span className="ls-billboard-accent" />
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                  {featuredLiveMatch.homeBadge && (
+                    <div className="absolute -left-14 top-1/2 -translate-y-1/2 opacity-[0.12] blur-[0.6px]">
+                      <SafeImage
+                        src={featuredLiveMatch.homeBadge}
+                        alt=""
+                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        hideOnError
+                      />
+                    </div>
+                  )}
+                  {featuredLiveMatch.awayBadge && (
+                    <div className="absolute -right-14 top-1/2 -translate-y-1/2 opacity-[0.12] blur-[0.6px]">
+                      <SafeImage
+                        src={featuredLiveMatch.awayBadge}
+                        alt=""
+                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        hideOnError
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="relative z-[1] flex h-full flex-col justify-between gap-8">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="mono-label text-[11px] uppercase tracking-[0.22em] text-white/55">
+                        Live on PulsePitch
+                      </p>
+                      <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/78">
+                        {featuredLeagueMedia?.logo && (
                           <SafeImage
-                            src={league.flag}
+                            src={featuredLeagueMedia.logo}
                             alt=""
-                            className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border border-(--ls-surface) object-cover"
+                            className="h-4 w-4 rounded object-contain"
                             hideOnError
                           />
                         )}
+                        {featuredLeagueName}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-rose-600 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-white">
+                      Live
+                    </span>
+                  </div>
+
+                  <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+                    <div className="max-w-3xl">
+                      <h1 className="text-4xl font-black tracking-[-0.06em] text-white md:text-6xl">
+                        {featuredLiveMatch.homeTeam} vs {featuredLiveMatch.awayTeam}
+                      </h1>
+                      <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
+                        Big-screen match coverage, fast score updates, and a direct path into the stream without the extra noise.
+                      </p>
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
+                          {totalLiveCount} live now
+                        </span>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
+                          {upcomingMatchesSource.length} scheduled
+                        </span>
+                        <span className="rounded-full border border-[var(--ls-accent)]/30 bg-[var(--ls-accent)]/12 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ls-accent)]">
+                          {favoriteIds.length} saved
+                        </span>
+                      </div>
+                      <div className="mt-7 flex flex-wrap items-center gap-3">
+                        <Link
+                          href={`/match/${encodeURIComponent(featuredLiveMatch.id)}`}
+                          className="ls-control ls-control-solid inline-flex h-12 items-center gap-2 px-6 text-sm font-black uppercase tracking-[0.14em]"
+                        >
+                          <PlayIcon />
+                          Watch live
+                        </Link>
+                        <p className="text-sm font-semibold text-white/62">
+                          {featuredLiveMatch.statusDetail ?? "In progress"} •{" "}
+                          {formatKickoff(featuredLiveMatch.startTime)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                      {[
+                        {
+                          team: featuredLiveMatch.homeTeam,
+                          badge: featuredLiveMatch.homeBadge,
+                          score: featuredLiveMatch.homeScore,
+                        },
+                        {
+                          team: featuredLiveMatch.awayTeam,
+                          badge: featuredLiveMatch.awayBadge,
+                          score: featuredLiveMatch.awayScore,
+                        },
+                      ].map((entry) => (
+                        <div
+                          key={`${featuredLiveMatch.id}-${entry.team}`}
+                          className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4"
+                        >
+                          <div className="flex items-center gap-3">
+                            <SafeImage
+                              src={entry.badge}
+                              alt=""
+                              className="h-12 w-12 shrink-0 object-contain"
+                              fallbackClassName="inline-block h-12 w-12 rounded-full bg-white/10"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-base font-bold text-white">
+                                {entry.team}
+                              </p>
+                              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-white/55">
+                                {featuredLeagueName}
+                              </p>
+                            </div>
+                            <div className="rounded-lg bg-black/35 px-3 py-2 text-2xl font-black text-white">
+                              {entry.score}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </article>
+
+              <div className="grid gap-3">
+                {ADSTERRA_TOP_SLOT && (
+                  <section className="ls-card overflow-hidden p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Sponsored
+                      </p>
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                        Top Banner
                       </span>
-                    ) : league.flag ? (
-                      <SafeImage
-                        src={league.flag}
-                        alt=""
-                        className="h-5 w-5 rounded-full object-cover"
-                        hideOnError
+                    </div>
+                    <div className="flex justify-center rounded-lg border border-slate-800 bg-black/20 p-2">
+                      <AdsterraSlot
+                        zoneKey={ADSTERRA_TOP_SLOT}
+                        host={ADSTERRA_HOST}
+                        width={300}
+                        height={250}
+                        format="banner"
+                        className="overflow-hidden rounded-md"
                       />
-                    ) : (
-                      <span className="inline-block h-5 w-5 rounded-full bg-(--ls-panel-alt)" />
-                    )}
-                    <span className="min-w-0 flex-1 truncate">
-                      {league.name}
-                    </span>
-                    <span className="text-[11px] opacity-70">
-                      {league.liveCount}
-                    </span>
-                  </button>
-                );
-              })}
+                    </div>
+                  </section>
+                )}
+                {promoMatches.length === 0 ? (
+                  <div className="ls-card flex min-h-[172px] items-center justify-center p-6 text-sm text-(--ls-muted)">
+                    More featured matches will show here as live fixtures load.
+                  </div>
+                ) : (
+                  promoMatches.map((match) => (
+                    <MatchRailCard key={`top-promo-${match.id}`} match={match} />
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <article className="ls-billboard min-h-[320px] p-6 md:p-8 xl:col-span-2">
+              <span className="ls-billboard-accent" />
+              <div className="relative z-[1] flex h-full flex-col justify-between gap-6">
+                <div>
+                  <p className="mono-label text-[11px] uppercase tracking-[0.22em] text-white/55">
+                    Matchday home
+                  </p>
+                  <h1 className="mt-3 max-w-3xl text-4xl font-black tracking-[-0.06em] text-white md:text-6xl">
+                    A cleaner football front page built for live viewing.
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
+                    Browse the competitions you follow, move into live streams faster, and keep the homepage focused on the matches that matter.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
+                    {totalLiveCount} live now
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
+                    {upcomingMatchesSource.length} upcoming
+                  </span>
+                </div>
+              </div>
+            </article>
+          )}
+        </section>
+
+        <section className="mb-3 space-y-3">
+          <section className="ls-rail-shell p-4 md:p-5">
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
+                  Featured live
+                </p>
+                <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
+                  Live events on now
+                </h2>
+              </div>
+              <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
+                Big matches first, surfaced as a watch shelf instead of a utility list.
+              </p>
             </div>
-
-            {cupGroup.length > 0 && (
-              <div className="mt-4 border-t border-(--ls-border) pt-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--ls-muted)">
-                  Cup
-                </p>
-                <div className="mt-2 space-y-1">
-                  {cupGroup.map((league) => (
-                    <button
-                      key={`cup-nav-${league.name}`}
-                      type="button"
-                      onClick={() => toggleLeaguePin(league.name)}
-                      className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm text-(--ls-muted) transition hover:bg-(--ls-panel-alt)"
-                    >
-                      {league.logo ? (
-                        <SafeImage
-                          src={league.logo}
-                          alt=""
-                          className="h-5 w-5 rounded object-contain"
-                          hideOnError
-                        />
-                      ) : league.flag ? (
-                        <SafeImage
-                          src={league.flag}
-                          alt=""
-                          className="h-5 w-5 rounded-full object-cover"
-                          hideOnError
-                        />
-                      ) : (
-                        <span className="inline-block h-5 w-5 rounded-full bg-(--ls-panel-alt)" />
-                      )}
-                      <span className="min-w-0 flex-1 truncate">
-                        {league.name}
-                      </span>
-                    </button>
-                  ))}
+            <div className="ls-rail-track">
+              {liveRailMatches.length === 0 ? (
+                <div className="rounded-2xl border border-(--ls-border) bg-(--ls-panel-alt) px-4 py-6 text-sm text-(--ls-muted)">
+                  No live matches are available in this rail yet.
                 </div>
-              </div>
-            )}
+              ) : (
+                liveRailMatches.map((match) => (
+                  <MatchRailCard key={`rail-live-${match.id}`} match={match} />
+                ))
+              )}
+            </div>
+          </section>
 
-            {pinnedLeagues.length > 0 && (
-              <div className="mt-4 border-t border-(--ls-border) pt-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-(--ls-muted)">
-                  Pinned
-                </p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {pinnedLeagues.map((league) => (
-                    <button
-                      key={`pinned-${league}`}
-                      type="button"
-                      onClick={() => toggleLeaguePin(league)}
-                      className="inline-flex h-7 items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 text-xs font-semibold text-emerald-300"
-                    >
-                      <span className="truncate max-w-28">{league}</span>
-                      <span>✕</span>
-                    </button>
-                  ))}
+            <section className="ls-rail-shell p-4 md:p-5">
+              <div className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
+                    Coming up
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
+                    Scheduled next
+                  </h2>
                 </div>
+                <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
+                  The next wave of fixtures, laid out like a content shelf.
+                </p>
               </div>
-            )}
-          </aside>
+            <div className="ls-rail-track">
+              {upcomingRailMatches.length === 0 ? (
+                <div className="rounded-2xl border border-(--ls-border) bg-(--ls-panel-alt) px-4 py-6 text-sm text-(--ls-muted)">
+                  No upcoming matches are available yet.
+                </div>
+              ) : (
+                upcomingRailMatches.map((match) => (
+                  <MatchRailCard
+                    key={`rail-upcoming-${match.id}`}
+                    match={match}
+                  />
+                ))
+              )}
+            </div>
+          </section>
+        </section>
 
+        <div className="space-y-3">
           <section className="space-y-2.5">
-            <section className="ls-card p-3">
+            <section className="ls-section-shell p-3">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                 <div className="flex flex-wrap items-end gap-2.5">
                   <SportSelector
@@ -826,6 +1023,76 @@ export default function HomePage() {
               </div>
             </section>
 
+            <section className="ls-rail-shell p-4 md:p-5">
+              <div className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
+                    Competition hubs
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
+                    Save the leagues you follow
+                  </h2>
+                </div>
+                {pinnedLeagues.length > 0 && (
+                  <div className="hidden flex-wrap justify-end gap-2 md:flex">
+                    {pinnedLeagues.slice(0, 5).map((league) => (
+                      <button
+                        key={`pinned-quick-${league}`}
+                        type="button"
+                        onClick={() => toggleLeaguePin(league)}
+                        className="rounded-full border border-[var(--ls-accent)]/35 bg-[var(--ls-accent)]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--ls-accent)]"
+                      >
+                        {league}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="ls-rail-track">
+                {featuredLeagueShelf.map((league) => {
+                  const pinned = pinnedLeagues.includes(league.name);
+
+                  return (
+                    <button
+                      key={`shelf-league-${league.name}`}
+                      type="button"
+                      onClick={() => toggleLeaguePin(league.name)}
+                      className="ls-league-tile flex w-[260px] shrink-0 items-center gap-3 p-4 text-left transition-transform hover:-translate-y-1"
+                    >
+                      {league.logo ? (
+                        <SafeImage
+                          src={league.logo}
+                          alt=""
+                          className="h-12 w-12 shrink-0 rounded-xl object-contain"
+                          hideOnError
+                        />
+                      ) : league.flag ? (
+                        <SafeImage
+                          src={league.flag}
+                          alt=""
+                          className="h-12 w-12 shrink-0 rounded-full object-cover"
+                          hideOnError
+                        />
+                      ) : (
+                        <span className="inline-block h-12 w-12 shrink-0 rounded-xl bg-(--ls-panel-alt)" />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-base font-bold text-(--ls-text)">
+                          {league.name}
+                        </span>
+                        <span className="mt-1 block text-sm text-(--ls-muted)">
+                          {league.liveCount} live right now
+                        </span>
+                      </span>
+                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${pinned ? "bg-[var(--ls-accent)] text-black" : "bg-(--ls-panel-alt) text-(--ls-muted)"}`}>
+                        {pinned ? "Saved" : "Add"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
             {sportsError && (
               <p className="rounded-xl border border-rose-800 bg-rose-950/35 px-4 py-3 text-sm text-rose-200">
                 Could not load sports list. Check API key/server connectivity.
@@ -844,227 +1111,29 @@ export default function HomePage() {
               </p>
             )}
 
-            {heroLoading ? (
-              <section className="overflow-hidden rounded-2xl border border-slate-800 bg-[#0a0f1d] p-4">
-                <div className="h-64 animate-pulse rounded-xl bg-slate-800" />
-              </section>
-            ) : featuredLiveMatch ? (
-              <section className="ls-hero-shell relative overflow-hidden rounded-xl border border-emerald-500/50 bg-[#060a14] p-1 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(42,255,123,0.25)_0px,transparent_6px)] opacity-35" />
-                <div className="ls-hero-frame relative min-h-[255px] overflow-hidden rounded-lg border border-emerald-500/40 p-4 md:min-h-[338px] md:p-6">
-                  <div className="ls-hero-backdrop pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_50%,rgba(46,107,255,0.38),transparent_47%),radial-gradient(circle_at_84%_48%,rgba(240,124,35,0.30),transparent_46%),linear-gradient(102deg,rgba(17,30,74,0.9),rgba(12,18,30,0.97))]" />
-                  <div className="pointer-events-none absolute -left-8 bottom-[-34px] h-28 w-28 rotate-45 border-l-4 border-b-4 border-emerald-500/85" />
-                  <div className="relative">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="flex items-center gap-2 text-sm font-semibold tracking-wide text-emerald-300">
-                        {featuredLeagueMedia?.logo && (
-                          <SafeImage
-                            src={featuredLeagueMedia.logo}
-                            alt=""
-                            className="h-5 w-5 rounded object-contain"
-                            hideOnError
-                          />
-                        )}
-                        {featuredLeagueMedia?.flag && (
-                          <SafeImage
-                            src={featuredLeagueMedia.flag}
-                            alt=""
-                            className="h-4 w-4 rounded-full object-cover"
-                            hideOnError
-                          />
-                        )}
-                        <span>{featuredLeagueName}</span>
-                      </p>
-                      <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-bold">
-                        LIVE
-                      </span>
-                    </div>
-
-                    <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-6">
-                      <div className="flex min-w-0 flex-col items-center text-center">
-                        <SafeImage
-                          src={featuredLiveMatch.homeBadge}
-                          alt=""
-                          className="h-24 w-24 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] md:h-28 md:w-28"
-                          fallbackClassName="inline-block h-24 w-24 rounded-full bg-white/15 md:h-28 md:w-28"
-                        />
-                        <p className="mt-2 max-w-[170px] truncate text-sm font-semibold md:text-lg">
-                          {featuredLiveMatch.homeTeam}
-                        </p>
-                      </div>
-
-                      <div className="text-center">
-                        <p className="text-[42px] font-black leading-none md:text-[74px]">
-                          {featuredLiveMatch.homeScore}
-                          <span className="px-1 text-white/70">:</span>
-                          {featuredLiveMatch.awayScore}
-                        </p>
-                        <p className="mt-2 text-xs text-white/75 md:text-sm">
-                          {featuredLiveMatch.statusDetail ?? "Live now"} •{" "}
-                          {formatKickoff(featuredLiveMatch.startTime)}
-                        </p>
-                      </div>
-
-                      <div className="flex min-w-0 flex-col items-center text-center">
-                        <SafeImage
-                          src={featuredLiveMatch.awayBadge}
-                          alt=""
-                          className="h-24 w-24 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] md:h-28 md:w-28"
-                          fallbackClassName="inline-block h-24 w-24 rounded-full bg-white/15 md:h-28 md:w-28"
-                        />
-                        <p className="mt-2 max-w-[170px] truncate text-sm font-semibold md:text-lg">
-                          {featuredLiveMatch.awayTeam}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 flex items-center justify-center">
-                      <Link
-                        href={`/match/${encodeURIComponent(featuredLiveMatch.id)}`}
-                        className="inline-flex h-12 items-center gap-2 rounded-md bg-emerald-500 px-7 text-xl font-bold text-black transition hover:bg-emerald-400"
-                      >
-                        <PlayIcon />
-                        <span>Watch Now</span>
-                      </Link>
-                    </div>
-                  </div>
+            <section className="ls-rail-shell p-4 md:p-5">
+              <div className="mb-4 flex items-end justify-between gap-3">
+                <div>
+                  <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
+                    Editors&apos; picks
+                  </p>
+                  <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
+                    More matches worth opening
+                  </h2>
                 </div>
-              </section>
-            ) : (
-              <section className="rounded-xl border border-slate-800 bg-[#090d18] p-6 text-center text-sm text-slate-300">
-                No live match available for this date. Try today for active
-                games.
-              </section>
-            )}
+                <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
+                  A tighter promotional shelf before the full schedule underneath.
+                </p>
+              </div>
+              <div className="ls-rail-track">
+                {displayMatches.slice(0, 12).map((match) => (
+                  <MatchRailCard key={`marquee-${match.id}`} match={match} />
+                ))}
+              </div>
+            </section>
 
             {status !== "finished" && (
               <>
-                <section className="ls-featured-wrap overflow-hidden rounded-xl border border-slate-800 bg-[#090d18]">
-                  <div className="ls-featured-head flex items-center justify-between border-b border-slate-800 px-4 py-3">
-                    <h2 className="text-2xl font-bold text-white">
-                      Latest Featured Match
-                    </h2>
-                    <span className="text-sm font-semibold text-slate-400">
-                      {highlightMatches.length} items
-                    </span>
-                  </div>
-
-                  {matchesSectionLoading ? (
-                    <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div
-                          key={`highlight-skel-${index}`}
-                          className="h-80 animate-pulse rounded-xl bg-slate-800"
-                        />
-                      ))}
-                    </div>
-                  ) : highlightMatches.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-sm text-slate-300">
-                      No matches found for this filter.
-                    </div>
-                  ) : (
-                    <div className="grid gap-4 p-4 md:grid-cols-2 xl:grid-cols-3">
-                      {highlightMatches.map((match) => (
-                        <article
-                          key={`highlight-${match.id}`}
-                          className="ls-featured-card overflow-hidden rounded-xl border border-slate-700 bg-slate-900"
-                        >
-                          <div className="ls-featured-card-top bg-[linear-gradient(130deg,#0f4de2_0%,#1041be_21%,#cf2b2b_21%,#cf2b2b_100%)] p-4">
-                            <div className="mb-3 flex items-center justify-between text-xs font-semibold text-white/90">
-                              <span className="flex min-w-0 items-center gap-1.5">
-                                {match.leagueLogo && (
-                                  <SafeImage
-                                    src={match.leagueLogo}
-                                    alt=""
-                                    className="h-5 w-5 rounded object-contain"
-                                    hideOnError
-                                  />
-                                )}
-                                {match.leagueFlag && (
-                                  <SafeImage
-                                    src={match.leagueFlag}
-                                    alt=""
-                                    className="h-3.5 w-3.5 rounded-full object-cover"
-                                    hideOnError
-                                  />
-                                )}
-                                <span className="truncate">
-                                  {match.league ?? "League"}
-                                </span>
-                              </span>
-                              <span>
-                                {match.status === "inprogress"
-                                  ? "LIVE"
-                                  : match.status === "notstarted"
-                                    ? "UPCOMING"
-                                    : "FINISHED"}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                              <div className="flex flex-col items-center gap-2.5">
-                                <SafeImage
-                                  src={match.homeBadge}
-                                  alt=""
-                                  className="h-14 w-14 object-contain"
-                                  fallbackClassName="inline-block h-14 w-14 rounded-full bg-white/25"
-                                />
-                                <p className="line-clamp-2 text-center text-xs font-semibold text-white">
-                                  {match.homeTeam}
-                                </p>
-                              </div>
-
-                              <p className="rounded-lg bg-black/35 px-3 py-1 text-2xl font-black text-white">
-                                {match.status === "notstarted"
-                                  ? "VS"
-                                  : `${match.homeScore}:${match.awayScore}`}
-                              </p>
-
-                              <div className="flex flex-col items-center gap-2.5">
-                                <SafeImage
-                                  src={match.awayBadge}
-                                  alt=""
-                                  className="h-14 w-14 object-contain"
-                                  fallbackClassName="inline-block h-14 w-14 rounded-full bg-white/25"
-                                />
-                                <p className="line-clamp-2 text-center text-xs font-semibold text-white">
-                                  {match.awayTeam}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="ls-featured-card-body space-y-3 border-t border-emerald-400/80 p-4">
-                            <p className="line-clamp-2 text-base font-semibold text-slate-200">
-                              {match.homeTeam} vs {match.awayTeam}
-                            </p>
-                            <div className="space-y-1 text-xs text-slate-300">
-                              <p>
-                                <span className="text-slate-400">League:</span>{" "}
-                                {match.league ?? "League"}
-                              </p>
-                              <p>
-                                <span className="text-slate-400">Kickoff:</span>{" "}
-                                {formatKickoff(match.startTime)}
-                              </p>
-                              <p>
-                                <span className="text-slate-400">Status:</span>{" "}
-                                {match.statusDetail ?? match.status}
-                              </p>
-                            </div>
-                            <Link
-                              href={`/match/${encodeURIComponent(match.id)}`}
-                              className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-emerald-500 text-base font-bold text-black transition hover:bg-emerald-400"
-                            >
-                              <PlayIcon />
-                              <span>Watch Now</span>
-                            </Link>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  )}
-                </section>
-
                 {ADSTERRA_NATIVE_CODE && (
                   <section className="rounded-xl border border-slate-800 bg-[#090d18] p-3">
                     <div className="mb-3 flex items-center justify-between">
@@ -1088,7 +1157,7 @@ export default function HomePage() {
                 <section className="ls-card overflow-hidden">
                   <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2.5">
                     <p className="text-base font-bold text-slate-100">
-                      All Matches
+                      Match schedule
                     </p>
                     <p className="mono-label text-xs uppercase tracking-[0.14em] text-slate-400">
                       {displayMatches.length} games
@@ -1157,7 +1226,7 @@ export default function HomePage() {
               <section className="ls-card overflow-hidden">
                 <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2.5">
                   <p className="text-base font-bold text-slate-100">
-                    Upcoming Matches
+                    Next up
                   </p>
                   <p className="mono-label text-xs uppercase tracking-[0.14em] text-slate-400">
                     {upcomingMatches.length} games

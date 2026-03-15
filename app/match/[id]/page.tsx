@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
+import MatchInsightsPanel from "@/components/MatchInsightsPanel";
 import SafeImage from "@/components/SafeImage";
 import StreamPlayer from "@/components/StreamPlayer";
 import StreamSourceSelect from "@/components/StreamSourceSelect";
@@ -25,7 +26,10 @@ const ADSTERRA_DEFAULT_NATIVE_SLOT =
 const ADSTERRA_NOTIFICATION_SLOT =
   process.env.NEXT_PUBLIC_ADSTERRA_NOTIFICATION_SLOT ||
   ADSTERRA_DEFAULT_NATIVE_SLOT;
+const ADSTERRA_TOP_SLOT =
+  process.env.NEXT_PUBLIC_ADSTERRA_TOP_SLOT || ADSTERRA_DEFAULT_NATIVE_SLOT;
 const ADSTERRA_NATIVE_CODE = process.env.NEXT_PUBLIC_ADSTERRA_NATIVE_CODE;
+const MATCH_DETAIL_RELATED_LIMIT = 20;
 
 function SearchIcon() {
   return (
@@ -219,13 +223,22 @@ export default function MatchDetailPage() {
   );
 
   const otherLiveMatches = useMemo(
-    () => liveMatches.filter((match) => match.id !== detail?.id).slice(0, 6),
+    () =>
+      liveMatches
+        .filter((match) => match.id !== detail?.id)
+        .slice(0, MATCH_DETAIL_RELATED_LIMIT),
     [liveMatches, detail?.id],
   );
   const incomingMatches = useMemo(
     () =>
-      upcomingMatches.filter((match) => match.id !== detail?.id).slice(0, 6),
+      upcomingMatches
+        .filter((match) => match.id !== detail?.id)
+        .slice(0, MATCH_DETAIL_RELATED_LIMIT),
     [upcomingMatches, detail?.id],
+  );
+  const relatedInsightsMatches = useMemo(
+    () => [...otherLiveMatches, ...incomingMatches],
+    [otherLiveMatches, incomingMatches],
   );
   const currentMatchAlert = useMemo(() => {
     if (!detail) {
@@ -311,9 +324,33 @@ export default function MatchDetailPage() {
 
     return cards.slice(0, 9);
   }, [liveMatches, upcomingMatches]);
+  const detailMetaCards = useMemo(() => {
+    if (!detail) {
+      return [];
+    }
+
+    return [
+      {
+        label: "Kickoff",
+        value: formatKickoff(detail.startTime),
+      },
+      {
+        label: "Venue",
+        value: detail.meta.stadium ?? "Venue pending",
+      },
+      {
+        label: "Referee",
+        value: detail.meta.referee ?? "TBA",
+      },
+      {
+        label: "Streams",
+        value: `${streams.length} sources`,
+      },
+    ];
+  }, [detail, streams.length]);
 
   return (
-    <main className="min-h-screen bg-(--ls-bg) text-(--ls-text)">
+    <main className="ls-shell min-h-screen bg-(--ls-bg) text-(--ls-text)">
       <header className="sticky top-0 z-40 border-b border-(--ls-border) bg-(--ls-header) backdrop-blur">
         <div className="mx-auto flex h-[74px] w-full max-w-[1500px] items-center justify-between px-3 md:px-6">
           <div className="flex items-center gap-3">
@@ -329,6 +366,14 @@ export default function MatchDetailPage() {
                 alt="PulsePitch Live"
                 className="h-12 w-auto object-contain md:h-14"
               />
+              <div className="hidden md:block">
+                <p className="text-sm font-black uppercase tracking-[0.18em] text-(--ls-text)">
+                  PulsePitch Live
+                </p>
+                <p className="text-xs font-semibold text-(--ls-muted)">
+                  Matchday view with stream, stats, and live context
+                </p>
+              </div>
               <span className="sr-only">Back to matches</span>
             </Link>
           </div>
@@ -562,78 +607,138 @@ export default function MatchDetailPage() {
 
         {detail && !is404 && (
           <section className="space-y-3">
-            <article className="ls-hero-shell relative overflow-hidden rounded-xl border border-emerald-500/50 bg-[#060a14] p-1 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(42,255,123,0.25)_0px,transparent_6px)] opacity-35" />
-              <div className="ls-hero-frame relative overflow-hidden rounded-lg border border-emerald-500/40 p-4 md:p-6">
-                <div className="ls-hero-backdrop pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_50%,rgba(46,107,255,0.38),transparent_47%),radial-gradient(circle_at_84%_48%,rgba(240,124,35,0.30),transparent_46%),linear-gradient(102deg,rgba(17,30,74,0.9),rgba(12,18,30,0.97))]" />
-                <div className="relative">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="flex min-w-0 items-center gap-2 truncate text-sm font-semibold tracking-wide text-emerald-300">
-                      {detail.leagueLogo && (
-                        <SafeImage
-                          src={detail.leagueLogo}
-                          alt=""
-                          className="h-5 w-5 rounded object-contain"
-                          hideOnError
-                        />
-                      )}
-                      {detail.leagueFlag && (
-                        <SafeImage
-                          src={detail.leagueFlag}
-                          alt=""
-                          className="h-4 w-4 rounded-full object-cover"
-                          hideOnError
-                        />
-                      )}
-                      <span className="truncate">
-                        {detail.league ?? "League"}
-                      </span>
-                    </p>
-                    <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-bold uppercase">
-                      {detail.status === "inprogress" ? "Live" : detail.status}
-                    </span>
-                  </div>
-
-                  <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-6">
-                    <div className="flex min-w-0 flex-col items-center text-center">
+            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+              <article className="ls-hero-shell relative overflow-hidden rounded-xl border border-emerald-500/50 bg-[#060a14] p-1 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
+                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(42,255,123,0.25)_0px,transparent_6px)] opacity-35" />
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                  {detail.homeBadge && (
+                    <div className="absolute -left-14 top-1/2 -translate-y-1/2 opacity-[0.12] blur-[0.6px]">
                       <SafeImage
                         src={detail.homeBadge}
                         alt=""
-                        className="h-24 w-24 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] md:h-28 md:w-28"
-                        fallbackClassName="inline-block h-24 w-24 rounded-full bg-white/15 md:h-28 md:w-28"
+                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        hideOnError
                       />
-                      <p className="mt-2 max-w-[170px] truncate text-sm font-semibold md:text-lg">
-                        {detail.homeTeam}
-                      </p>
                     </div>
-
-                    <div className="text-center">
-                      <p className="text-[42px] font-black leading-none md:text-[74px]">
-                        {detail.homeScore}
-                        <span className="px-1 text-white/70">:</span>
-                        {detail.awayScore}
-                      </p>
-                      <p className="mt-2 text-xs text-white/75 md:text-sm">
-                        {detail.statusDetail ?? "Match"} •{" "}
-                        {formatKickoff(detail.startTime)}
-                      </p>
-                    </div>
-
-                    <div className="flex min-w-0 flex-col items-center text-center">
+                  )}
+                  {detail.awayBadge && (
+                    <div className="absolute -right-14 top-1/2 -translate-y-1/2 opacity-[0.12] blur-[0.6px]">
                       <SafeImage
                         src={detail.awayBadge}
                         alt=""
-                        className="h-24 w-24 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] md:h-28 md:w-28"
-                        fallbackClassName="inline-block h-24 w-24 rounded-full bg-white/15 md:h-28 md:w-28"
+                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        hideOnError
                       />
-                      <p className="mt-2 max-w-[170px] truncate text-sm font-semibold md:text-lg">
-                        {detail.awayTeam}
+                    </div>
+                  )}
+                </div>
+                <div className="ls-hero-frame relative overflow-hidden rounded-lg border border-emerald-500/40 p-4 md:p-6">
+                  <div className="ls-hero-backdrop pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_50%,rgba(46,107,255,0.38),transparent_47%),radial-gradient(circle_at_84%_48%,rgba(240,124,35,0.30),transparent_46%),linear-gradient(102deg,rgba(17,30,74,0.9),rgba(12,18,30,0.97))]" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="flex min-w-0 items-center gap-2 truncate text-sm font-semibold tracking-wide text-emerald-300">
+                        {detail.leagueLogo && (
+                          <SafeImage
+                            src={detail.leagueLogo}
+                            alt=""
+                            className="h-5 w-5 rounded object-contain"
+                            hideOnError
+                          />
+                        )}
+                        {detail.leagueFlag && (
+                          <SafeImage
+                            src={detail.leagueFlag}
+                            alt=""
+                            className="h-4 w-4 rounded-full object-cover"
+                            hideOnError
+                          />
+                        )}
+                        <span className="truncate">
+                          {detail.league ?? "League"}
+                        </span>
                       </p>
+                      <span className="rounded-full bg-rose-500 px-3 py-1 text-xs font-bold uppercase">
+                        {detail.status === "inprogress" ? "Live" : detail.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-2 md:gap-6">
+                      <div className="flex min-w-0 flex-col items-center text-center">
+                        <SafeImage
+                          src={detail.homeBadge}
+                          alt=""
+                          className="h-24 w-24 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] md:h-28 md:w-28"
+                          fallbackClassName="inline-block h-24 w-24 rounded-full bg-white/15 md:h-28 md:w-28"
+                        />
+                        <p className="mt-2 max-w-[170px] truncate text-sm font-semibold md:text-lg">
+                          {detail.homeTeam}
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[42px] font-black leading-none md:text-[74px]">
+                          {detail.homeScore}
+                          <span className="px-1 text-white/70">:</span>
+                          {detail.awayScore}
+                        </p>
+                        <p className="mt-2 text-xs text-white/75 md:text-sm">
+                          {detail.statusDetail ?? "Match"} •{" "}
+                          {formatKickoff(detail.startTime)}
+                        </p>
+                      </div>
+
+                      <div className="flex min-w-0 flex-col items-center text-center">
+                        <SafeImage
+                          src={detail.awayBadge}
+                          alt=""
+                          className="h-24 w-24 object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)] md:h-28 md:w-28"
+                          fallbackClassName="inline-block h-24 w-24 rounded-full bg-white/15 md:h-28 md:w-28"
+                        />
+                        <p className="mt-2 max-w-[170px] truncate text-sm font-semibold md:text-lg">
+                          {detail.awayTeam}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </article>
+              </article>
+
+              {ADSTERRA_TOP_SLOT && (
+                <aside className="ls-card hidden overflow-hidden p-3 xl:block">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      Sponsored
+                    </p>
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                      Top Banner
+                    </span>
+                  </div>
+                  <div className="flex justify-center rounded-lg border border-slate-800 bg-black/20 p-2">
+                    <AdsterraSlot
+                      zoneKey={ADSTERRA_TOP_SLOT}
+                      host={ADSTERRA_HOST}
+                      width={300}
+                      height={250}
+                      format="banner"
+                      className="overflow-hidden rounded-md"
+                    />
+                  </div>
+                </aside>
+              )}
+            </div>
+
+            <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {detailMetaCards.map((card) => (
+                <article key={card.label} className="ls-meta-strip p-4">
+                  <p className="mono-label text-[11px] uppercase tracking-[0.16em] text-(--ls-muted)">
+                    {card.label}
+                  </p>
+                  <p className="mt-3 text-base font-bold text-(--ls-text)">
+                    {card.value}
+                  </p>
+                </article>
+              ))}
+            </section>
 
             <section className="ls-match-panel ls-card overflow-hidden p-4 md:p-5">
               <h2 className="ls-match-panel-title inline-flex items-center gap-2 text-lg font-bold text-white">
@@ -688,6 +793,11 @@ export default function MatchDetailPage() {
                 </div>
               )}
             </section>
+
+            <MatchInsightsPanel
+              detail={detail}
+              relatedMatches={relatedInsightsMatches}
+            />
 
             <section className="grid gap-3 lg:grid-cols-2">
               <article className="ls-match-list ls-card overflow-hidden">

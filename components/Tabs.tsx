@@ -58,7 +58,7 @@ export default function Tabs({ value, onChange }: TabsProps) {
             type="button"
             onClick={() => onChange(option.id)}
             data-active={active}
-            className={`ls-segmented-button inline-flex h-10 items-center gap-2 px-4 text-sm font-semibold whitespace-nowrap ${
+            className={`ls-segmented-button inline-flex h-10 items-center gap-2 px-4 text-sm font-black uppercase tracking-[0.12em] whitespace-nowrap ${
               active ? "" : "text-[var(--ls-text)]"
             }`}
           >

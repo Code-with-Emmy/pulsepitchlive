@@ -93,6 +93,10 @@ function writeCachedPayload(
   });
 }
 
+function developmentFallbackCacheSeconds(): number {
+  return 5;
+}
+
 export function parseSportSRCError(error: unknown): {
   status: number;
   message: string;
@@ -142,49 +146,76 @@ export async function fetchSportSRC<T>(
   }
 
   const requestPromise = (async () => {
-  const response = await fetch(endpoint, {
-    headers: {
-      "X-API-KEY": apiKey,
-    },
-    next: { revalidate },
-  });
-
-  const text = await response.text();
-  let payload: unknown = null;
-
-  if (text) {
     try {
-      payload = JSON.parse(text);
-    } catch {
-      payload = text;
+      const response = await fetch(endpoint, {
+        headers: {
+          "X-API-KEY": apiKey,
+        },
+        next: { revalidate },
+      });
+
+      const text = await response.text();
+      let payload: unknown = null;
+
+      if (text) {
+        try {
+          payload = JSON.parse(text);
+        } catch {
+          payload = text;
+        }
+      }
+
+      if (!response.ok) {
+        const upstreamMessage =
+          typeof payload === "object" &&
+          payload &&
+          "message" in payload &&
+          typeof payload.message === "string"
+            ? payload.message
+            : `SportSRC upstream error (${response.status})`;
+
+        if (process.env.NODE_ENV === "development") {
+          console.warn(
+            `SportSRC upstream returned ${response.status} for ${endpoint}. Using mock data in development.`,
+          );
+          const mockPayload = mockFetchSportSRC(params);
+          writeCachedPayload(
+            endpoint,
+            mockPayload,
+            developmentFallbackCacheSeconds(),
+          );
+          return mockPayload as T;
+        }
+
+        throw new SportSRCError({
+          status: response.status,
+          statusText: response.statusText,
+          endpoint,
+          payload,
+          message: upstreamMessage,
+        });
+      }
+
+      writeCachedPayload(endpoint, payload, revalidate);
+
+      return payload as T;
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        console.warn(
+          `SportSRC request failed for ${endpoint}: ${message}. Using mock data in development.`,
+        );
+        const mockPayload = mockFetchSportSRC(params);
+        writeCachedPayload(
+          endpoint,
+          mockPayload,
+          developmentFallbackCacheSeconds(),
+        );
+        return mockPayload as T;
+      }
+
+      throw error;
     }
-  }
-
-  if (!response.ok) {
-    const upstreamMessage =
-      typeof payload === "object" && payload && "message" in payload && typeof payload.message === "string"
-        ? payload.message
-        : `SportSRC upstream error (${response.status})`;
-
-    if (response.status === 429 && process.env.NODE_ENV === "development") {
-      console.warn(`SportSRC Rate limit (429) hit for ${endpoint}. Using mock data.`);
-      const mockPayload = mockFetchSportSRC(params);
-      writeCachedPayload(endpoint, mockPayload, 60);
-      return mockPayload as T;
-    }
-
-    throw new SportSRCError({
-      status: response.status,
-      statusText: response.statusText,
-      endpoint,
-      payload,
-      message: upstreamMessage,
-    });
-  }
-
-    writeCachedPayload(endpoint, payload, revalidate);
-
-    return payload as T;
   })();
 
   inflight.set(endpoint, requestPromise);

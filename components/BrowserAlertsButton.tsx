@@ -17,17 +17,17 @@ export default function BrowserAlertsButton({
 
   if (permission === "granted") {
     return (
-      <span className="ls-control inline-flex h-9 items-center gap-2 border-emerald-500/35 bg-emerald-500/12 px-3 text-sm font-semibold text-emerald-300">
+      <span className="ls-control inline-flex h-9 items-center gap-2 border-white/12 bg-white/5 px-3 text-sm font-black uppercase tracking-[0.14em] text-white">
         <span className="ls-blink inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-        Alerts On
+        Alerts
       </span>
     );
   }
 
   if (permission === "denied") {
     return (
-      <span className="ls-control inline-flex h-9 items-center border-amber-500/25 bg-amber-500/10 px-3 text-sm font-semibold text-amber-300">
-        Alerts Blocked
+      <span className="ls-control inline-flex h-9 items-center border-amber-500/25 bg-amber-500/10 px-3 text-sm font-black uppercase tracking-[0.14em] text-amber-300">
+        Alerts Off
       </span>
     );
   }
@@ -36,7 +36,7 @@ export default function BrowserAlertsButton({
     <button
       type="button"
       onClick={onRequest}
-      className="ls-control ls-control-muted inline-flex h-9 items-center px-3 text-sm font-semibold"
+      className="ls-control ls-control-muted inline-flex h-9 items-center px-3 text-sm font-black uppercase tracking-[0.14em]"
     >
       Enable Alerts
     </button>
