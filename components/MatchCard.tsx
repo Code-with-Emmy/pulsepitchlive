@@ -179,7 +179,7 @@ export default function MatchCard({
         </div>
 
         <Link
-          href={`/match/${encodeURIComponent(match.id)}${match.status === "inprogress" ? "?fs=1" : ""}`}
+          href={`/match/${encodeURIComponent(match.id)}`}
           onClick={() => {
             if (smartLinkEnabled) {
               triggerAdsterraSmartLink(

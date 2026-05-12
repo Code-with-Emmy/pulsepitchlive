@@ -14,7 +14,7 @@ export default function MatchRailCard({ match }: MatchRailCardProps) {
 
   return (
     <Link
-      href={`/match/${encodeURIComponent(match.id)}${isLive ? "?fs=1" : ""}`}
+      href={`/match/${encodeURIComponent(match.id)}`}
       className="ls-rail-card group block w-[300px] shrink-0 p-5 transition-transform duration-200 hover:-translate-y-1 md:w-[348px]"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

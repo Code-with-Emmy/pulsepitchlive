@@ -752,7 +752,6 @@ export default function MatchDetailPage() {
                     <div className="mt-3">
                       <StreamPlayer
                         src={activeStreamUrl}
-                        autoFullscreen={autoFullscreen}
                         onLoad={() => {
                           setLastLoadedUrl(activeStreamUrl);
                           setFailedStreamUrls((prev) =>
