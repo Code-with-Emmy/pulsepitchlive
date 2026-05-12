@@ -69,7 +69,11 @@ export default function StreamPlayer({ src, autoFullscreen, onLoad, onError }: S
   }, []);
 
   useEffect(() => {
-    if (isReady && autoFullscreen && !hasAutoAttempted && !document.fullscreenElement) {
+    // Only attempt auto-fullscreen on larger screens (desktop)
+    // Mobile browsers are extremely strict about requestFullscreen and usually block it.
+    const isMobile = window.innerWidth < 640;
+    
+    if (isReady && autoFullscreen && !isMobile && !hasAutoAttempted && !document.fullscreenElement) {
       setHasAutoAttempted(true);
       if (containerRef.current) {
         // requestFullscreen requires a user gesture. 
@@ -112,7 +116,7 @@ export default function StreamPlayer({ src, autoFullscreen, onLoad, onError }: S
         />
 
         {!isFullscreen && isReady && (
-          <div className="pointer-events-none absolute inset-0 z-15 flex items-center justify-center opacity-100 transition-opacity duration-500 sm:opacity-0 group-hover:opacity-100">
+          <div className="pointer-events-none absolute inset-0 z-15 hidden items-center justify-center transition-opacity duration-500 sm:flex sm:opacity-0 group-hover:opacity-100">
             <button
               onClick={toggleFullscreen}
               className="pointer-events-auto flex items-center gap-3 rounded-full bg-(--ls-accent) px-6 py-3 text-sm font-black uppercase tracking-widest text-black shadow-[0_0_30px_rgba(244,255,67,0.4)] transition-all hover:scale-110 active:scale-95 sm:px-8 sm:py-4 sm:text-base"
