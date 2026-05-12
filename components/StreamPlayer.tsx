@@ -71,11 +71,11 @@ export default function StreamPlayer({ src, autoFullscreen, onLoad, onError }: S
   useEffect(() => {
     if (isReady && autoFullscreen && !hasAutoAttempted && !document.fullscreenElement) {
       setHasAutoAttempted(true);
-      // Attempting to trigger based on the intent param
-      // Browsers may still block this, hence the fallback overlay
       if (containerRef.current) {
+        // requestFullscreen requires a user gesture. 
+        // This will often fail on page load, which is why we catch it and show the fallback overlay.
         containerRef.current.requestFullscreen().catch(() => {
-          console.log("Auto-fullscreen blocked, showing overlay instead");
+          // No need to spam the console, we already handle this by showing the overlay
         });
       }
     }
@@ -107,7 +107,6 @@ export default function StreamPlayer({ src, autoFullscreen, onLoad, onError }: S
           title="Live stream player"
           className="absolute inset-0 h-full w-full rounded-[22px]"
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
-          allowFullScreen
           onLoad={handleLoad}
           onError={onError}
         />
