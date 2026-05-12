@@ -866,7 +866,7 @@ export default function HomePage() {
                       </div>
                       <div className="mt-7 flex flex-wrap items-center gap-3">
                         <Link
-                          href={`/match/${encodeURIComponent(featuredLiveMatch.id)}`}
+                          href={`/match/${encodeURIComponent(featuredLiveMatch.id)}?fs=1`}
                           className="ls-control ls-control-solid inline-flex h-12 items-center gap-2 px-6 text-sm font-black uppercase tracking-[0.14em]"
                         >
                           <PlayIcon />

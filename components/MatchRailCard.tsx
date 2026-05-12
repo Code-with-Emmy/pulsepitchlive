@@ -14,7 +14,7 @@ export default function MatchRailCard({ match }: MatchRailCardProps) {
 
   return (
     <Link
-      href={`/match/${encodeURIComponent(match.id)}`}
+      href={`/match/${encodeURIComponent(match.id)}${isLive ? "?fs=1" : ""}`}
       className="ls-rail-card group block w-[300px] shrink-0 p-5 transition-transform duration-200 hover:-translate-y-1 md:w-[348px]"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -40,7 +40,7 @@ export default function MatchRailCard({ match }: MatchRailCardProps) {
         )}
       </div>
 
-      <div className="relative z-[1]">
+      <div className="relative z-1">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-white/48">
@@ -102,7 +102,7 @@ export default function MatchRailCard({ match }: MatchRailCardProps) {
           <p className="text-sm font-semibold text-white/66">
             {match.statusDetail ?? (isLive ? "Live match" : "Matchday")}
           </p>
-          <span className="rounded-full bg-[var(--ls-accent)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-black">
+          <span className="rounded-full bg-(--ls-accent) px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-black">
             Open
           </span>
         </div>

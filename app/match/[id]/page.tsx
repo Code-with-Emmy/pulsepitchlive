@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
@@ -96,7 +97,9 @@ function streamScore(stream: StreamSource): number {
 
 export default function MatchDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const id = params?.id ?? null;
+  const autoFullscreen = searchParams?.get("fs") === "1";
   const { detail, isLoading, error, mutate } = useMatchDetail(id);
   const { permission: alertsPermission, requestPermission } = useBrowserAlerts();
   const [selectedStreamUrl, setSelectedStreamUrl] = useState("");
@@ -749,6 +752,7 @@ export default function MatchDetailPage() {
                     <div className="mt-3">
                       <StreamPlayer
                         src={activeStreamUrl}
+                        autoFullscreen={autoFullscreen}
                         onLoad={() => {
                           setLastLoadedUrl(activeStreamUrl);
                           setFailedStreamUrls((prev) =>
