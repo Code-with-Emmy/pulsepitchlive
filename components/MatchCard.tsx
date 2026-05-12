@@ -104,11 +104,11 @@ export default function MatchCard({
                   hideOnError
                 />
               )}
-              <p className="truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--ls-muted)]">
+              <p className="truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-(--ls-muted)">
                 {leagueName}
               </p>
             </div>
-            <p className="mono-label mt-2 text-[11px] uppercase tracking-[0.16em] text-[var(--ls-muted)]">
+            <p className="mono-label mt-2 text-[11px] uppercase tracking-[0.16em] text-(--ls-muted)">
               {formatKickoff(match.startTime)}
             </p>
           </div>
@@ -138,36 +138,36 @@ export default function MatchCard({
               src={match.homeBadge}
               alt=""
               className="h-10 w-10 shrink-0 object-contain md:h-11 md:w-11"
-              fallbackClassName="inline-block h-10 w-10 shrink-0 rounded-full bg-[var(--ls-panel-alt)] md:h-11 md:w-11"
+              fallbackClassName="inline-block h-10 w-10 shrink-0 rounded-full bg-(--ls-panel-alt) md:h-11 md:w-11"
             />
-            <span className="truncate text-sm font-black tracking-[-0.02em] text-[var(--ls-text)] md:text-base">
+            <span className="truncate text-sm font-black tracking-[-0.02em] text-(--ls-text) md:text-base">
               {match.homeTeam}
             </span>
           </div>
 
-          <div className="rounded-lg border border-[var(--ls-border)] bg-black/25 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-            <p className="text-xl font-black tracking-tight text-[var(--ls-text)] md:text-2xl">
+          <div className="rounded-lg border border-(--ls-border) bg-black/25 px-3 py-2 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+            <p className="text-xl font-black tracking-tight text-(--ls-text) md:text-2xl">
               {match.homeScore}
-              <span className="px-1.5 text-[var(--ls-muted)]">:</span>
+              <span className="px-1.5 text-(--ls-muted)">:</span>
               {match.awayScore}
             </p>
           </div>
 
           <div className="flex min-w-0 items-center justify-end gap-3">
-            <span className="truncate text-right text-sm font-black tracking-[-0.02em] text-[var(--ls-text)] md:text-base">
+            <span className="truncate text-right text-sm font-black tracking-[-0.02em] text-(--ls-text) md:text-base">
               {match.awayTeam}
             </span>
             <SafeImage
               src={match.awayBadge}
               alt=""
               className="h-10 w-10 shrink-0 object-contain md:h-11 md:w-11"
-              fallbackClassName="inline-block h-10 w-10 shrink-0 rounded-full bg-[var(--ls-panel-alt)] md:h-11 md:w-11"
+              fallbackClassName="inline-block h-10 w-10 shrink-0 rounded-full bg-(--ls-panel-alt) md:h-11 md:w-11"
             />
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 border-t border-[var(--ls-border)] pt-3 md:flex-row md:items-center md:justify-between">
-          <p className="text-xs font-semibold capitalize tracking-[0.04em] text-[var(--ls-muted)]">
+        <div className="flex flex-col gap-2 border-t border-(--ls-border) pt-3 md:flex-row md:items-center md:justify-between">
+          <p className="text-xs font-semibold capitalize tracking-[0.04em] text-(--ls-muted)">
             {match.statusDetail ?? "No detail"}
           </p>
           <div className="flex items-center justify-between gap-2 md:justify-end">

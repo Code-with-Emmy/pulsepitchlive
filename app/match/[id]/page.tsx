@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
-import MatchInsightsPanel from "@/components/MatchInsightsPanel";
+
 import SafeImage from "@/components/SafeImage";
 import StreamPlayer from "@/components/StreamPlayer";
 import StreamSourceSelect from "@/components/StreamSourceSelect";
@@ -236,10 +236,7 @@ export default function MatchDetailPage() {
         .slice(0, MATCH_DETAIL_RELATED_LIMIT),
     [upcomingMatches, detail?.id],
   );
-  const relatedInsightsMatches = useMemo(
-    () => [...otherLiveMatches, ...incomingMatches],
-    [otherLiveMatches, incomingMatches],
-  );
+
   const currentMatchAlert = useMemo(() => {
     if (!detail) {
       return [];
@@ -351,7 +348,7 @@ export default function MatchDetailPage() {
 
   return (
     <main className="ls-shell min-h-screen bg-(--ls-bg) text-(--ls-text)">
-      <header className="sticky top-0 z-40 border-b border-(--ls-border) bg-(--ls-header) backdrop-blur">
+      <header className="sticky top-0 z-9999 border-b border-slate-800 bg-(--ls-header) backdrop-blur-md">
         <div className="mx-auto flex h-[74px] w-full max-w-[1500px] items-center justify-between px-3 md:px-6">
           <div className="flex items-center gap-3">
             <Link
@@ -425,7 +422,7 @@ export default function MatchDetailPage() {
             </button>
 
             {searchOpen && (
-              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
+              <div className="ls-floating-panel absolute right-0 top-12 z-100000 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
                 <div className="border-b border-(--ls-border) p-3">
                   <input
                     type="text"
@@ -487,7 +484,7 @@ export default function MatchDetailPage() {
             )}
 
             {notificationsOpen && (
-              <div className="ls-floating-panel absolute right-0 top-12 z-50 w-[min(92vw,420px)] overflow-hidden rounded-2xl">
+              <div className="ls-floating-panel absolute right-0 top-12 z-100000 w-[min(92vw,420px)] overflow-hidden rounded-2xl shadow-[0_28px_80px_rgba(0,0,0,0.52)]">
                 <div className="flex items-center justify-between border-b border-(--ls-border) px-3 py-2.5">
                   <p className="text-sm font-semibold text-(--ls-text)">
                     Match Alerts
@@ -567,7 +564,7 @@ export default function MatchDetailPage() {
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-2 py-3 md:px-4">
+      <div className="relative z-0 mx-auto flex w-full max-w-[1500px] flex-col gap-3 px-2 py-3 md:px-4">
         {isLoading && (
           <div className="ls-card overflow-hidden p-4">
             <div className="h-14 animate-pulse rounded bg-slate-800" />
@@ -616,7 +613,7 @@ export default function MatchDetailPage() {
                       <SafeImage
                         src={detail.homeBadge}
                         alt=""
-                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        className="h-52 w-52 object-contain md:h-68 md:w-68 xl:h-80 xl:w-80"
                         hideOnError
                       />
                     </div>
@@ -626,7 +623,7 @@ export default function MatchDetailPage() {
                       <SafeImage
                         src={detail.awayBadge}
                         alt=""
-                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        className="h-52 w-52 object-contain md:h-68 md:w-68 xl:h-80 xl:w-80"
                         hideOnError
                       />
                     </div>
@@ -794,10 +791,6 @@ export default function MatchDetailPage() {
               )}
             </section>
 
-            <MatchInsightsPanel
-              detail={detail}
-              relatedMatches={relatedInsightsMatches}
-            />
 
             <section className="grid gap-3 lg:grid-cols-2">
               <article className="ls-match-list ls-card overflow-hidden">

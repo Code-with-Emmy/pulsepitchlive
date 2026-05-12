@@ -492,18 +492,21 @@ export default function HomePage() {
 
   const is503 =
     matchesError instanceof ApiClientError && matchesError.status === 503;
+  const isInitialLoading = !date || !activeSport;
   const heroLoading =
+    isInitialLoading ||
     liveMatchesLoading ||
     (liveMatchesSource.length === 0 && fallbackLiveLoading);
   const liveFallbackLoading =
     status === "inprogress" &&
     filteredMatches.length === 0 &&
     (liveMatchesLoading || fallbackLiveLoading);
-  const matchesSectionLoading = matchesLoading || liveFallbackLoading;
+  const matchesSectionLoading =
+    isInitialLoading || matchesLoading || liveFallbackLoading;
 
   return (
     <main className="ls-shell min-h-screen bg-(--ls-bg) text-(--ls-text)">
-      <header className="sticky top-0 z-40 border-b border-(--ls-border) bg-(--ls-header) backdrop-blur">
+      <header className="sticky top-0 z-9999 border-b border-(--ls-border) bg-(--ls-header) backdrop-blur">
         <div className="mx-auto flex h-[74px] w-full max-w-[1500px] items-center justify-between px-3 md:px-6">
           <div className="flex items-center gap-3">
             <img
@@ -559,7 +562,7 @@ export default function HomePage() {
             <ThemeToggle />
 
             {searchOpen && (
-              <div className="ls-floating-panel fixed right-3 top-[84px] z-[140] w-[min(94vw,420px)] overflow-hidden rounded-2xl md:right-6">
+              <div className="ls-floating-panel fixed right-3 top-[84px] z-99999 w-[min(94vw,420px)] overflow-hidden rounded-2xl md:right-6">
                 <div className="border-b border-var(--ls-border) p-3">
                   <input
                     type="text"
@@ -621,7 +624,7 @@ export default function HomePage() {
             )}
 
             {notificationsOpen && (
-              <div className="ls-floating-panel fixed right-3 top-[84px] z-[160] w-[min(94vw,420px)] overflow-hidden rounded-2xl shadow-[0_28px_80px_rgba(0,0,0,0.52)] md:right-6">
+              <div className="ls-floating-panel fixed right-3 top-[84px] z-99999 w-[min(94vw,420px)] overflow-hidden rounded-2xl shadow-[0_28px_80px_rgba(0,0,0,0.52)] md:right-6">
                 <div className="flex items-center justify-between border-b border-(--ls-border) px-3 py-2.5">
                   <p className="text-sm font-semibold text-(--ls-text)">
                     Match Alerts
@@ -632,7 +635,8 @@ export default function HomePage() {
                 </div>
                 {alertsPermission !== "granted" && (
                   <div className="border-b border-(--ls-border) px-3 py-2 text-xs text-(--ls-muted)">
-                    Enable browser alerts to get live updates for favorite or pinned matches while this page is open.
+                    Enable browser alerts to get live updates for favorite or
+                    pinned matches while this page is open.
                   </div>
                 )}
                 <div className="max-h-[calc(100vh-112px)] overflow-y-auto p-2">
@@ -701,7 +705,86 @@ export default function HomePage() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
+      <div className="relative z-0 mx-auto w-full max-w-[1500px] px-2 py-3 md:px-4">
+        <section className="ls-rail-shell p-4 md:p-5 mb-3">
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
+                Top League
+              </p>
+              <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
+                Save the leagues you follow
+              </h2>
+            </div>
+            {pinnedLeagues.length > 0 && (
+              <div className="hidden flex-wrap justify-end gap-2 md:flex">
+                {pinnedLeagues.slice(0, 5).map((league) => (
+                  <button
+                    key={`pinned-quick-${league}`}
+                    type="button"
+                    onClick={() => toggleLeaguePin(league)}
+                    className="rounded-full border border-(--ls-accent)/35 bg-(--ls-accent)/10 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-(--ls-accent)"
+                  >
+                    {league}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="ls-rail-track">
+            {matchesSectionLoading
+              ? Array.from({ length: 7 }).map((_, index) => (
+                  <div
+                    key={`league-shelf-skeleton-${index}`}
+                    className="h-20 w-[260px] shrink-0 animate-pulse rounded-2xl bg-(--ls-panel-alt)"
+                  />
+                ))
+              : featuredLeagueShelf.map((league) => {
+                  const pinned = pinnedLeagues.includes(league.name);
+
+                  return (
+                    <button
+                      key={`shelf-league-${league.name}`}
+                      type="button"
+                      onClick={() => toggleLeaguePin(league.name)}
+                      className="ls-league-tile flex w-[260px] shrink-0 items-center gap-3 p-4 text-left transition-transform hover:-translate-y-1"
+                    >
+                      {league.logo ? (
+                        <SafeImage
+                          src={league.logo}
+                          alt=""
+                          className="h-12 w-12 shrink-0 rounded-xl object-contain"
+                          hideOnError
+                        />
+                      ) : league.flag ? (
+                        <SafeImage
+                          src={league.flag}
+                          alt=""
+                          className="h-12 w-12 shrink-0 rounded-full object-cover"
+                          hideOnError
+                        />
+                      ) : (
+                        <span className="inline-block h-12 w-12 shrink-0 rounded-xl bg-(--ls-panel-alt)" />
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-base font-bold text-(--ls-text)">
+                          {league.name}
+                        </span>
+                        <span className="mt-1 block text-sm text-(--ls-muted)">
+                          {league.liveCount} live right now
+                        </span>
+                      </span>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest ${pinned ? "bg-(--ls-accent) text-black" : "bg-(--ls-panel-alt) text-(--ls-muted)"}`}
+                      >
+                        {pinned ? "Saved" : "Add"}
+                      </span>
+                    </button>
+                  );
+                })}
+          </div>
+        </section>
+
         <section className="mb-3 grid gap-3 xl:grid-cols-[minmax(0,1.65fr)_360px]">
           {heroLoading ? (
             <>
@@ -721,7 +804,7 @@ export default function HomePage() {
                       <SafeImage
                         src={featuredLiveMatch.homeBadge}
                         alt=""
-                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        className="h-52 w-52 object-contain md:h-68 md:w-68 xl:h-80 xl:w-80"
                         hideOnError
                       />
                     </div>
@@ -731,13 +814,13 @@ export default function HomePage() {
                       <SafeImage
                         src={featuredLiveMatch.awayBadge}
                         alt=""
-                        className="h-52 w-52 object-contain md:h-[17rem] md:w-[17rem] xl:h-80 xl:w-80"
+                        className="h-52 w-52 object-contain md:h-68 md:w-68 xl:h-80 xl:w-80"
                         hideOnError
                       />
                     </div>
                   )}
                 </div>
-                <div className="relative z-[1] flex h-full flex-col justify-between gap-8">
+                <div className="relative z-1 flex h-full flex-col justify-between gap-8">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="mono-label text-[11px] uppercase tracking-[0.22em] text-white/55">
@@ -763,10 +846,12 @@ export default function HomePage() {
                   <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
                     <div className="max-w-3xl">
                       <h1 className="text-4xl font-black tracking-[-0.06em] text-white md:text-6xl">
-                        {featuredLiveMatch.homeTeam} vs {featuredLiveMatch.awayTeam}
+                        {featuredLiveMatch.homeTeam} vs{" "}
+                        {featuredLiveMatch.awayTeam}
                       </h1>
                       <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
-                        Big-screen match coverage, fast score updates, and a direct path into the stream without the extra noise.
+                        Big-screen match coverage, fast score updates, and a
+                        direct path into the stream without the extra noise.
                       </p>
                       <div className="mt-6 flex flex-wrap gap-2">
                         <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
@@ -775,7 +860,7 @@ export default function HomePage() {
                         <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
                           {upcomingMatchesSource.length} scheduled
                         </span>
-                        <span className="rounded-full border border-[var(--ls-accent)]/30 bg-[var(--ls-accent)]/12 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ls-accent)]">
+                        <span className="rounded-full border border-(--ls-accent)/30 bg-(--ls-accent)/12 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-(--ls-accent)">
                           {favoriteIds.length} saved
                         </span>
                       </div>
@@ -809,7 +894,7 @@ export default function HomePage() {
                       ].map((entry) => (
                         <div
                           key={`${featuredLiveMatch.id}-${entry.team}`}
-                          className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4"
+                          className="rounded-xl border border-white/10 bg-white/4 px-4 py-4"
                         >
                           <div className="flex items-center gap-3">
                             <SafeImage
@@ -866,33 +951,36 @@ export default function HomePage() {
                   </div>
                 ) : (
                   promoMatches.map((match) => (
-                    <MatchRailCard key={`top-promo-${match.id}`} match={match} />
+                    <MatchRailCard
+                      key={`top-promo-${match.id}`}
+                      match={match}
+                    />
                   ))
                 )}
               </div>
             </>
           ) : (
-            <article className="ls-billboard min-h-[320px] p-6 md:p-8 xl:col-span-2">
+            <article className="ls-billboard min-h-[360px] flex items-center justify-center p-6 md:p-8 xl:col-span-2">
               <span className="ls-billboard-accent" />
-              <div className="relative z-[1] flex h-full flex-col justify-between gap-6">
-                <div>
-                  <p className="mono-label text-[11px] uppercase tracking-[0.22em] text-white/55">
-                    Matchday home
-                  </p>
-                  <h1 className="mt-3 max-w-3xl text-4xl font-black tracking-[-0.06em] text-white md:text-6xl">
-                    A cleaner football front page built for live viewing.
-                  </h1>
-                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
-                    Browse the competitions you follow, move into live streams faster, and keep the homepage focused on the matches that matter.
-                  </p>
+              <div className="relative z-1 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5 border border-white/10">
+                  <PlayIcon />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
-                    {totalLiveCount} live now
-                  </span>
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-white/82">
-                    {upcomingMatchesSource.length} upcoming
-                  </span>
+                <h1 className="text-2xl font-black tracking-tight text-white md:text-4xl">
+                  No live matches right now
+                </h1>
+                <p className="mt-3 max-w-lg text-sm leading-6 text-white/55 md:text-base">
+                  There are no matches currently in progress for the selected
+                  sport and date. Check the upcoming rail below or change the
+                  date to find more games.
+                </p>
+                <div className="mt-6 flex justify-center gap-2">
+                  <button
+                    onClick={() => setStatus("notstarted")}
+                    className="ls-control ls-control-solid h-10 px-6 text-xs font-bold uppercase tracking-widest"
+                  >
+                    View Upcoming
+                  </button>
                 </div>
               </div>
             </article>
@@ -911,11 +999,19 @@ export default function HomePage() {
                 </h2>
               </div>
               <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
-                Big matches first, surfaced as a watch shelf instead of a utility list.
+                Big matches first, surfaced as a watch shelf instead of a
+                utility list.
               </p>
             </div>
             <div className="ls-rail-track">
-              {liveRailMatches.length === 0 ? (
+              {matchesSectionLoading ? (
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={`live-rail-skeleton-${index}`}
+                    className="h-[240px] w-[300px] shrink-0 animate-pulse rounded-2xl bg-(--ls-panel-alt) md:w-[348px]"
+                  />
+                ))
+              ) : liveRailMatches.length === 0 ? (
                 <div className="rounded-2xl border border-(--ls-border) bg-(--ls-panel-alt) px-4 py-6 text-sm text-(--ls-muted)">
                   No live matches are available in this rail yet.
                 </div>
@@ -927,22 +1023,29 @@ export default function HomePage() {
             </div>
           </section>
 
-            <section className="ls-rail-shell p-4 md:p-5">
-              <div className="mb-4 flex items-end justify-between gap-3">
-                <div>
-                  <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
-                    Coming up
-                  </p>
-                  <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
-                    Scheduled next
-                  </h2>
-                </div>
-                <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
-                  The next wave of fixtures, laid out like a content shelf.
+          <section className="ls-rail-shell p-4 md:p-5">
+            <div className="mb-4 flex items-end justify-between gap-3">
+              <div>
+                <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
+                  Coming up
                 </p>
+                <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
+                  Scheduled next
+                </h2>
               </div>
+              <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
+                The next wave of fixtures, laid out like a content shelf.
+              </p>
+            </div>
             <div className="ls-rail-track">
-              {upcomingRailMatches.length === 0 ? (
+              {matchesSectionLoading ? (
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={`upcoming-rail-skeleton-${index}`}
+                    className="h-[240px] w-[300px] shrink-0 animate-pulse rounded-2xl bg-(--ls-panel-alt) md:w-[348px]"
+                  />
+                ))
+              ) : upcomingRailMatches.length === 0 ? (
                 <div className="rounded-2xl border border-(--ls-border) bg-(--ls-panel-alt) px-4 py-6 text-sm text-(--ls-muted)">
                   No upcoming matches are available yet.
                 </div>
@@ -988,9 +1091,7 @@ export default function HomePage() {
                     type="button"
                     onClick={toggleFavoritesOnly}
                     className={`ls-control inline-flex h-10 items-center px-4 text-sm font-semibold ${
-                      favoritesOnly
-                        ? "ls-control-solid"
-                        : "ls-control-muted"
+                      favoritesOnly ? "ls-control-solid" : "ls-control-muted"
                     }`}
                   >
                     {favoritesOnly ? "Favorites On" : "Favorites"}
@@ -999,9 +1100,7 @@ export default function HomePage() {
                     type="button"
                     onClick={togglePinnedOnly}
                     className={`ls-control inline-flex h-10 items-center px-4 text-sm font-semibold ${
-                      pinnedOnly
-                        ? "ls-control-solid"
-                        : "ls-control-muted"
+                      pinnedOnly ? "ls-control-solid" : "ls-control-muted"
                     }`}
                   >
                     {pinnedOnly ? "Pinned On" : "Pinned"}
@@ -1020,76 +1119,6 @@ export default function HomePage() {
 
               <div className="mt-3 border-t border-(--ls-border) pt-3">
                 <Tabs value={status} onChange={setStatus} />
-              </div>
-            </section>
-
-            <section className="ls-rail-shell p-4 md:p-5">
-              <div className="mb-4 flex items-end justify-between gap-3">
-                <div>
-                  <p className="mono-label text-[11px] uppercase tracking-[0.18em] text-(--ls-muted)">
-                    Competition hubs
-                  </p>
-                  <h2 className="mt-2 text-2xl font-black tracking-[-0.04em] text-(--ls-text)">
-                    Save the leagues you follow
-                  </h2>
-                </div>
-                {pinnedLeagues.length > 0 && (
-                  <div className="hidden flex-wrap justify-end gap-2 md:flex">
-                    {pinnedLeagues.slice(0, 5).map((league) => (
-                      <button
-                        key={`pinned-quick-${league}`}
-                        type="button"
-                        onClick={() => toggleLeaguePin(league)}
-                        className="rounded-full border border-[var(--ls-accent)]/35 bg-[var(--ls-accent)]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.1em] text-[var(--ls-accent)]"
-                      >
-                        {league}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="ls-rail-track">
-                {featuredLeagueShelf.map((league) => {
-                  const pinned = pinnedLeagues.includes(league.name);
-
-                  return (
-                    <button
-                      key={`shelf-league-${league.name}`}
-                      type="button"
-                      onClick={() => toggleLeaguePin(league.name)}
-                      className="ls-league-tile flex w-[260px] shrink-0 items-center gap-3 p-4 text-left transition-transform hover:-translate-y-1"
-                    >
-                      {league.logo ? (
-                        <SafeImage
-                          src={league.logo}
-                          alt=""
-                          className="h-12 w-12 shrink-0 rounded-xl object-contain"
-                          hideOnError
-                        />
-                      ) : league.flag ? (
-                        <SafeImage
-                          src={league.flag}
-                          alt=""
-                          className="h-12 w-12 shrink-0 rounded-full object-cover"
-                          hideOnError
-                        />
-                      ) : (
-                        <span className="inline-block h-12 w-12 shrink-0 rounded-xl bg-(--ls-panel-alt)" />
-                      )}
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-base font-bold text-(--ls-text)">
-                          {league.name}
-                        </span>
-                        <span className="mt-1 block text-sm text-(--ls-muted)">
-                          {league.liveCount} live right now
-                        </span>
-                      </span>
-                      <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.1em] ${pinned ? "bg-[var(--ls-accent)] text-black" : "bg-(--ls-panel-alt) text-(--ls-muted)"}`}>
-                        {pinned ? "Saved" : "Add"}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
             </section>
 
@@ -1122,13 +1151,26 @@ export default function HomePage() {
                   </h2>
                 </div>
                 <p className="hidden max-w-sm text-right text-sm leading-6 text-(--ls-muted) md:block">
-                  A tighter promotional shelf before the full schedule underneath.
+                  A tighter promotional shelf before the full schedule
+                  underneath.
                 </p>
               </div>
               <div className="ls-rail-track">
-                {displayMatches.slice(0, 12).map((match) => (
-                  <MatchRailCard key={`marquee-${match.id}`} match={match} />
-                ))}
+                {matchesSectionLoading
+                  ? Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={`marquee-skeleton-${index}`}
+                        className="h-[240px] w-[300px] shrink-0 animate-pulse rounded-2xl bg-(--ls-panel-alt) md:w-[348px]"
+                      />
+                    ))
+                  : displayMatches
+                      .slice(0, 12)
+                      .map((match) => (
+                        <MatchRailCard
+                          key={`marquee-${match.id}`}
+                          match={match}
+                        />
+                      ))}
               </div>
             </section>
 
@@ -1225,9 +1267,7 @@ export default function HomePage() {
             {status !== "notstarted" && (
               <section className="ls-card overflow-hidden">
                 <div className="flex items-center justify-between border-b border-slate-800 px-4 py-2.5">
-                  <p className="text-base font-bold text-slate-100">
-                    Next up
-                  </p>
+                  <p className="text-base font-bold text-slate-100">Next up</p>
                   <p className="mono-label text-xs uppercase tracking-[0.14em] text-slate-400">
                     {upcomingMatches.length} games
                   </p>
@@ -1270,7 +1310,6 @@ export default function HomePage() {
               </section>
             )}
           </section>
-
         </div>
       </div>
     </main>
