@@ -93,6 +93,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Google AdSense - Top of head for faster verification */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9765234827600801"
+          crossOrigin="anonymous"
+        />
+        <meta name="google-adsense-account" content="ca-pub-9765234827600801" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(() => {
@@ -132,13 +139,6 @@ export default function RootLayout({
         <Script
           id="ezoic-analytics"
           src="//ezoicanalytics.com/analytics.js"
-          strategy="afterInteractive"
-        />
-        {/* Google AdSense */}
-        <Script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID}`}
-          crossOrigin="anonymous"
           strategy="afterInteractive"
         />
       </head>
