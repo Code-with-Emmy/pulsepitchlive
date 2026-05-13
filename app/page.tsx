@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
+import EzoicAd from "@/components/EzoicAd";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 import MatchCard from "@/components/MatchCard";
 import MatchRailCard from "@/components/MatchRailCard";
@@ -945,6 +946,10 @@ export default function HomePage() {
                     </div>
                   </section>
                 )}
+                
+                {/* Ezoic Sidebar Ad - Replace ID with actual Ezoic ID */}
+                <EzoicAd id={101} />
+
                 {promoMatches.length === 0 ? (
                   <div className="ls-card flex min-h-[172px] items-center justify-center p-6 text-sm text-(--ls-muted)">
                     More featured matches will show here as live fixtures load.

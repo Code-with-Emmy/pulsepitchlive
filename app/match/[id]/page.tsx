@@ -6,6 +6,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
+import EzoicAd from "@/components/EzoicAd";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 
 import SafeImage from "@/components/SafeImage";
@@ -635,6 +636,10 @@ export default function MatchDetailPage() {
                 <div className="ls-hero-frame relative overflow-hidden rounded-lg border border-emerald-500/40 p-4 md:p-6">
                   <div className="ls-hero-backdrop pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_50%,rgba(46,107,255,0.38),transparent_47%),radial-gradient(circle_at_84%_48%,rgba(240,124,35,0.30),transparent_46%),linear-gradient(102deg,rgba(17,30,74,0.9),rgba(12,18,30,0.97))]" />
                   <div className="relative">
+                    {/* SEO H1 - Hidden but present for crawlers */}
+                    <h1 className="sr-only">
+                      {detail.homeTeam} vs {detail.awayTeam} - Live Stream & Scores
+                    </h1>
                     <div className="flex items-center justify-between gap-2">
                       <p className="flex min-w-0 items-center gap-2 truncate text-sm font-semibold tracking-wide text-emerald-300">
                         {detail.leagueLogo && (
@@ -725,6 +730,9 @@ export default function MatchDetailPage() {
                   </div>
                 </aside>
               )}
+              
+              {/* Ezoic Match Sidebar Ad */}
+              <EzoicAd id={102} />
             </div>
 
             <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
