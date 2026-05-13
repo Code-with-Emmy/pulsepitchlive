@@ -19,6 +19,9 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "PulsePitch Live",
   description: "PulsePitch Live scores and streams powered by SportSRC V2",
+  verification: {
+    google: "o1QLUlhD8l1R4sPdlg1M--rHRefYfw-Sc7XI-7EIEEs",
+  },
 };
 
 const ADSTERRA_SOCIAL_BAR_CODE =
