@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "PulsePitch Live",
   description: "PulsePitch Live scores and streams powered by SportSRC V2",
   verification: {
-    google: "o1QLUlhD8l1R4sPdlg1M--rHRefYfw-Sc7XI-7EIEEs",
+    google: "djd0NiEJZx33oLyKi35vty0_eeWGMiA1DuFkRlJMDvI",
   },
 };
 
