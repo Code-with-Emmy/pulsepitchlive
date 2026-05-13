@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import EzoicAd from "@/components/EzoicAd";
+import GoogleAd from "@/components/GoogleAd";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 import MatchCard from "@/components/MatchCard";
 import MatchRailCard from "@/components/MatchRailCard";
@@ -949,6 +950,24 @@ export default function HomePage() {
                 
                 {/* Ezoic Sidebar Ad - Replace ID with actual Ezoic ID */}
                 <EzoicAd id={101} />
+
+                {/* Google AdSense Sidebar Ad */}
+                {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_SIDEBAR_SLOT && (
+                  <section className="ls-card overflow-hidden p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Sponsored
+                      </p>
+                      <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                        AdSense
+                      </span>
+                    </div>
+                    <GoogleAd 
+                      slot={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_SIDEBAR_SLOT} 
+                      format="rectangle"
+                    />
+                  </section>
+                )}
 
                 {promoMatches.length === 0 ? (
                   <div className="ls-card flex min-h-[172px] items-center justify-center p-6 text-sm text-(--ls-muted)">

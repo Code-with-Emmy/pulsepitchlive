@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AdsterraNativeSlot from "@/components/AdsterraNativeSlot";
 import AdsterraSlot from "@/components/AdsterraSlot";
 import EzoicAd from "@/components/EzoicAd";
+import GoogleAd from "@/components/GoogleAd";
 import BrowserAlertsButton from "@/components/BrowserAlertsButton";
 
 import SafeImage from "@/components/SafeImage";
@@ -733,6 +734,26 @@ export default function MatchDetailPage() {
               
               {/* Ezoic Match Sidebar Ad */}
               <EzoicAd id={102} />
+
+              {/* Google AdSense Sidebar Ad */}
+              {process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_SIDEBAR_SLOT && (
+                <aside className="ls-card overflow-hidden p-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      Sponsored
+                    </p>
+                    <span className="text-[10px] uppercase tracking-[0.15em] text-slate-500">
+                      AdSense
+                    </span>
+                  </div>
+                  <div className="flex justify-center rounded-lg border border-slate-800 bg-black/20 p-2">
+                    <GoogleAd 
+                      slot={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_SIDEBAR_SLOT} 
+                      format="rectangle"
+                    />
+                  </div>
+                </aside>
+              )}
             </div>
 
             <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
