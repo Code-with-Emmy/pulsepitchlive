@@ -1259,7 +1259,7 @@ export default function HomePage() {
                             match.league ?? "Unknown League",
                           )}
                           onToggleLeaguePin={toggleLeaguePin}
-                          smartLinkEnabled={index < 4}
+                          smartLinkEnabled={index < 4 && process.env.NEXT_PUBLIC_DISABLE_SMART_LINKS !== "true"}
                         />
                       ))}
                     </div>
@@ -1326,7 +1326,7 @@ export default function HomePage() {
                           match.league ?? "Unknown League",
                         )}
                         onToggleLeaguePin={toggleLeaguePin}
-                        smartLinkEnabled={index < 2}
+                        smartLinkEnabled={index < 2 && process.env.NEXT_PUBLIC_DISABLE_SMART_LINKS !== "true"}
                       />
                     ))}
                   </div>
@@ -1335,6 +1335,34 @@ export default function HomePage() {
             )}
           </section>
         </div>
+        <section className="mt-12 rounded-2xl border border-(--ls-border) bg-(--ls-panel-alt) p-6 md:p-10">
+          <h2 className="text-2xl font-black tracking-tight text-(--ls-text) md:text-3xl">Frequently Asked Questions</h2>
+          <div className="mt-8 grid gap-8 md:grid-cols-2">
+            {[
+              {
+                q: "How often are the live scores updated?",
+                a: "Our scores are updated in real-time, typically within seconds of the event occurring on the pitch. We use advanced data feeds to ensure you have the most current information."
+              },
+              {
+                q: "Can I watch football streams on mobile?",
+                a: "Yes! PulsePitch Live is fully responsive and optimized for mobile devices. You can watch live streams on your smartphone or tablet with the same high quality as on a desktop."
+              },
+              {
+                q: "Do I need to create an account to view scores?",
+                a: "No account is required. You can access all live scores, fixtures, and stream links for free without any registration."
+              },
+              {
+                q: "Which leagues do you cover?",
+                a: "We provide comprehensive coverage for all major leagues, including the Premier League, UEFA Champions League, La Liga, Serie A, and many more international tournaments."
+              }
+            ].map((faq, i) => (
+              <div key={i} className="space-y-3">
+                <h3 className="text-lg font-bold text-(--ls-text)">{faq.q}</h3>
+                <p className="text-sm leading-6 text-(--ls-muted)">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );

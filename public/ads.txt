@@ -1,1 +1,7 @@
+# Google AdSense
 google.com, pub-9765234827600801, DIRECT, f08c47fec0942fa0
+
+# Adsterra (Replace with your actual Publisher ID from Adsterra dashboard)
+adsterra.com, YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+
+# Ezoic (Check your Ezoic dashboard for their required ads.txt lines)

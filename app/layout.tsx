@@ -159,8 +159,14 @@ export default function RootLayout({
                   </p>
                 </div>
                 <p className="mt-4 max-w-md text-sm leading-7 text-(--ls-muted)">
-                  PulsePitch Live is your ultimate destination for real-time football scores, live match updates, and high-quality streaming links. We bring you the pulse of the pitch from leagues all around the world, including the Premier League, La Liga, Serie A, and more.
+                  PulsePitch Live is your ultimate destination for real-time football scores, live match updates, and high-quality streaming links. We bring you the pulse of the pitch from leagues all around the world, including the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, and the Champions League. Our mission is to provide football fans with a seamless, fast, and comprehensive viewing experience, ensuring you never miss a moment of the action. Whether you're tracking live scores, checking upcoming fixtures, or looking for reliable match streams, PulsePitch Live has you covered with the latest technology and real-time data.
                 </p>
+                <div className="mt-6">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-(--ls-text)">Why Choose PulsePitch?</h4>
+                  <p className="mt-2 text-xs leading-5 text-(--ls-muted)">
+                    Our platform is optimized for speed and reliability. We aggregate data from multiple premium sources to provide the most accurate live scores and match statistics. Our stream selection algorithm prioritizes high-definition sources with low latency, giving you the best seat in the stadium from the comfort of your home.
+                  </p>
+                </div>
                 <div className="mt-6 flex gap-4">
                   {/* Social placeholders could go here */}
                 </div>
@@ -201,22 +207,26 @@ export default function RootLayout({
           </div>
         </footer>
 
-        <AdsterraSocialBar
-          code={ADSTERRA_SOCIAL_BAR_CODE}
-          delayMs={
-            Number.isFinite(ADSTERRA_SOCIAL_BAR_DELAY_MS)
-              ? ADSTERRA_SOCIAL_BAR_DELAY_MS
-              : 8000
-          }
-        />
-        <AdsterraPopunder
-          code={ADSTERRA_POPUNDER_CODE}
-          cooldownMs={
-            Number.isFinite(ADSTERRA_POPUNDER_COOLDOWN_MS)
-              ? ADSTERRA_POPUNDER_COOLDOWN_MS
-              : 86400000
-          }
-        />
+        {process.env.NEXT_PUBLIC_DISABLE_POPUNDERS !== "true" && (
+          <AdsterraSocialBar
+            code={ADSTERRA_SOCIAL_BAR_CODE}
+            delayMs={
+              Number.isFinite(ADSTERRA_SOCIAL_BAR_DELAY_MS)
+                ? ADSTERRA_SOCIAL_BAR_DELAY_MS
+                : 8000
+            }
+          />
+        )}
+        {process.env.NEXT_PUBLIC_DISABLE_POPUNDERS !== "true" && (
+          <AdsterraPopunder
+            code={ADSTERRA_POPUNDER_CODE}
+            cooldownMs={
+              Number.isFinite(ADSTERRA_POPUNDER_COOLDOWN_MS)
+                ? ADSTERRA_POPUNDER_COOLDOWN_MS
+                : 86400000
+            }
+          />
+        )}
       </body>
       <Analytics />
     </html>
