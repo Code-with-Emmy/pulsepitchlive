@@ -608,8 +608,8 @@ export default function MatchDetailPage() {
         )}
 
         {detail && !is404 && (
-          <section className="space-y-3">
-            <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+          <section className="flex flex-col gap-3">
+            <div className="order-2 grid gap-3 xl:order-1 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
               <article className="ls-hero-shell relative overflow-hidden rounded-xl border border-emerald-500/50 bg-[#060a14] p-1 text-white shadow-[0_16px_40px_rgba(0,0,0,0.35)]">
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(42,255,123,0.25)_0px,transparent_6px)] opacity-35" />
                 <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -756,7 +756,7 @@ export default function MatchDetailPage() {
               )}
             </div>
 
-            <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <section className="order-3 grid gap-3 md:grid-cols-2 xl:order-2 xl:grid-cols-4">
               {detailMetaCards.map((card) => (
                 <article key={card.label} className="ls-meta-strip p-4">
                   <p className="mono-label text-[11px] uppercase tracking-[0.16em] text-(--ls-muted)">
@@ -769,16 +769,18 @@ export default function MatchDetailPage() {
               ))}
             </section>
 
-            <section className="ls-match-panel ls-card overflow-hidden p-4 md:p-5">
-              <h2 className="ls-match-panel-title inline-flex items-center gap-2 text-lg font-bold text-white">
-                <span className="ls-blink inline-flex h-2.5 w-2.5 rounded-full bg-rose-500" />
-                <span>Live Stream</span>
-              </h2>
+            <section className="order-1 -mx-2 mb-2 flex flex-col overflow-hidden bg-[#060a14] pb-3 md:mx-0 md:mb-0 md:block md:bg-transparent md:ls-match-panel md:ls-card md:p-5 xl:order-3 border-y border-emerald-900/30 md:border-none">
+              <div className="flex items-center justify-between px-3 py-2.5 md:mb-3 md:p-0">
+                <h2 className="ls-match-panel-title inline-flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-emerald-400 md:text-lg md:normal-case md:text-white md:tracking-normal">
+                  <span className="ls-blink inline-flex h-2 w-2 rounded-full bg-rose-500 md:h-2.5 md:w-2.5" />
+                  <span>Live Stream</span>
+                </h2>
+              </div>
 
               {streams.length > 0 ? (
                 <>
                   {activeStreamUrl && (
-                    <div className="mt-3">
+                    <div className="w-full md:mt-0">
                       <StreamPlayer
                         src={activeStreamUrl}
                         onLoad={() => {
@@ -794,7 +796,7 @@ export default function MatchDetailPage() {
                     </div>
                   )}
 
-                  <div className="mt-4 flex flex-col gap-3">
+                  <div className="mt-3 flex flex-col gap-3 px-3 md:mt-4 md:px-0 md:pb-0">
                     <StreamSourceSelect
                       sources={rankedStreams}
                       selectedUrl={activeStreamUrl}
@@ -817,14 +819,13 @@ export default function MatchDetailPage() {
                   </div>
                 </>
               ) : (
-                <div className="mt-3 text-base text-slate-300">
+                <div className="px-3 py-4 text-sm text-slate-400 md:mt-3 md:px-0 md:py-0 md:text-base md:text-slate-300">
                   No stream available
                 </div>
               )}
             </section>
 
-
-            <section className="grid gap-3 lg:grid-cols-2">
+            <section className="order-4 grid gap-3 lg:grid-cols-2">
               <article className="ls-match-list ls-card overflow-hidden">
                 <div className="ls-match-list-head border-b border-slate-800 px-4 py-2.5">
                   <h2 className="ls-match-list-title text-base font-bold text-slate-100">

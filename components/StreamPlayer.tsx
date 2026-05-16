@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import Hls from "hls.js";
+
 interface StreamPlayerProps {
   src: string;
   onLoad?: () => void;
@@ -46,19 +49,77 @@ function withAutoplay(rawUrl: string): string {
 
 export default function StreamPlayer({ src, onLoad, onError }: StreamPlayerProps) {
   const autoplaySrc = withAutoplay(src);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Check if the URL is a direct stream (m3u8) or an iframe embed
+  const isM3U8 = autoplaySrc.includes(".m3u8");
+
+  useEffect(() => {
+    if (!isM3U8 || !videoRef.current) return;
+
+    let hls: Hls | null = null;
+    const video = videoRef.current;
+
+    if (Hls.isSupported()) {
+      hls = new Hls({
+        maxMaxBufferLength: 30,
+      });
+      hls.loadSource(autoplaySrc);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {
+          // Ignore autoplay errors
+        });
+        if (onLoad) onLoad();
+      });
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          if (onError) onError();
+        }
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      // For Safari where HLS is natively supported
+      video.src = autoplaySrc;
+      video.addEventListener("loadedmetadata", () => {
+        video.play().catch(() => {});
+        if (onLoad) onLoad();
+      });
+      video.addEventListener("error", () => {
+        if (onError) onError();
+      });
+    }
+
+    return () => {
+      if (hls) {
+        hls.destroy();
+      }
+    };
+  }, [autoplaySrc, isM3U8, onLoad, onError]);
 
   return (
-    <div className="ls-player-shell relative overflow-hidden rounded-[22px] bg-black shadow-2xl">
+    <div className="ls-player-shell relative overflow-hidden rounded-none bg-black shadow-2xl">
       <div className="relative aspect-video min-h-[220px] w-full sm:min-h-0">
-        <iframe
-          key={autoplaySrc}
-          src={autoplaySrc}
-          title="Live stream player"
-          className="absolute inset-0 h-full w-full"
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
-          onLoad={onLoad}
-          onError={onError}
-        />
+        {isM3U8 ? (
+          <video
+            ref={videoRef}
+            className="absolute inset-0 h-full w-full"
+            controls
+            playsInline
+            autoPlay
+            muted
+          />
+        ) : (
+          <iframe
+            key={autoplaySrc}
+            src={autoplaySrc}
+            title="Live stream player"
+            className="absolute inset-0 h-full w-full"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture; clipboard-write"
+            // sandbox="allow-scripts allow-same-origin allow-presentation"
+            onLoad={onLoad}
+            onError={onError}
+          />
+        )}
       </div>
     </div>
   );
